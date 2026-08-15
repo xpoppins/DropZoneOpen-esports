@@ -54,7 +54,7 @@ export const CONFIG = {
     participationNote: 'Every other squad that plays a match gets a participation certificate.',
   },
 
-  entryFee: 200,
+  entryFee: 200 as number,
 
   contact: {
     email: 'dropzone.lobby@gmail.com',

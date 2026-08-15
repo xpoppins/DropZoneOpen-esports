@@ -1,0 +1,788 @@
+===============================================================================
+ DROP ZONE OPEN  —  SETUP GUIDE
+ Read top to bottom once. Then use PART 3 as your to-do list.
+ Project folder: C:\Users\BIG1CS HOST\Desktop\bgmi
+===============================================================================
+
+CONTENTS
+  PART 0 .... What this project is (2 pieces)
+  PART 1 .... Run it on your laptop
+  PART 2 .... The two pages: the site and the admin page
+  PART 3 .... WHAT YOU HAVE TO DO NOW  (the checklist)
+  PART 4 .... Which file to edit for what
+  PART 5 .... Match night: putting scores up
+  PART 6 .... The backend: what it is for, and can you drop it
+  PART 7 .... Putting it online (deploy)
+  PART 8 .... If something breaks
+  PART 9 .... Command cheat sheet
+
+
+===============================================================================
+ PART 0 — WHAT THIS PROJECT IS
+===============================================================================
+
+There are two programs in one folder.
+
+  1. THE SITE (folder: client)
+     What players see. Built with React. It is only HTML/CSS/JS in the end,
+     so it can be hosted anywhere.
+
+  2. THE SERVER (folder: server)
+     A small program that holds the standings and the slot count, and lets
+     you change them from the admin page. Built with Express.
+
+     A database (MongoDB) is OPTIONAL. With no database set up, the server
+     saves everything into a plain file: server/data/results.json
+     That is enough to run the whole thing on your laptop today.
+
+Registration itself is NOT in this project — it is your Google Form. The site
+just sends people to it. That is deliberate: forms are Google's problem, not
+yours, and you already know how to read the responses sheet.
+
+
+===============================================================================
+ PART 1 — RUN IT ON YOUR LAPTOP
+===============================================================================
+
+STEP 1.1 — Install Node.js (once, if you do not have it)
+  - Go to  https://nodejs.org
+  - Download the LTS version (Node 18 or newer; 20 or 22 is ideal)
+  - Install it with all the default options
+  - Check it worked: open PowerShell and type
+        node -v
+    You should see something like  v20.11.0
+
+STEP 1.2 — Open a terminal IN THE PROJECT FOLDER
+  - Open the folder in File Explorer:  C:\Users\BIG1CS HOST\Desktop\bgmi
+  - Click the address bar, type  powershell  and press Enter
+  - (Or in VS Code: Terminal > New Terminal — it opens here already)
+
+STEP 1.3 — Install the packages (once, and after you pull new code)
+        npm install
+
+  This takes 1-3 minutes and creates a node_modules folder. That folder is
+  large and is never uploaded anywhere — it is rebuilt on each machine.
+
+STEP 1.4 — Start it
+        npm run dev
+
+  Leave this window OPEN. It is the site running. You will see two lines,
+  one for API and one for WEB.
+
+STEP 1.5 — Open it in your browser
+        http://localhost:5173
+
+  That is the site. Every time you save a file, the browser updates itself.
+
+  The terminal prints the exact address after "Local:". If it says 5174 or
+  5175 instead of 5173, that means an older copy is still running on 5173 —
+  use the address it printed, or see PART 8 to free the port.
+
+STEP 1.6 — To stop it
+  - Click the terminal window, press  Ctrl + C
+  - (If a port is stuck, see PART 8.)
+
+
+===============================================================================
+ PART 2 — THE TWO PAGES
+===============================================================================
+
+While  npm run dev  is running, there are two addresses:
+
+  THE SITE            http://localhost:5173
+                      What players see. Hero, prize pool, format, rules,
+                      registration, standings, FAQ.
+
+  THE ADMIN PAGE      http://localhost:5173/admin
+                      Where YOU type match scores. Not linked from the site
+                      anywhere — you have to know the address.
+
+There is a third address you will rarely need. It is the server itself:
+
+  THE SERVER          http://localhost:4000/api/health
+                      Open it and you should see:
+                        {"ok":true,"store":"file", ...}
+                      "store":"file"  = saving into results.json
+                      "store":"mongo" = saving into your database
+
+  You do NOT open the site on port 4000 while developing. Use 5173. The site
+  on 5173 talks to the server on 4000 by itself, behind the scenes.
+
+  (After deploying, this changes: everything runs on ONE address. See PART 7.)
+
+IMPORTANT — the admin page is locked. Until you sign in, /admin shows only a
+password box: no scores, no slot fields, no upload buttons, nothing to poke at.
+That password is a setting called ADMIN_TOKEN. Set it now:
+
+  1. In the project folder, find the file  .env.example
+  2. Make a COPY of it inside the server folder, named exactly  .env
+     So the path is:  server\.env
+     In PowerShell, from the project folder:
+        copy .env.example server\.env
+  3. Open  server\.env  in Notepad and set a password, for example:
+        ADMIN_TOKEN=dropzone-admin-9182-xyz
+     Any long random text. Do not use "admin" or "1234".
+  4. Save the file, then stop (Ctrl+C) and restart  npm run dev
+  5. Go to http://localhost:5173/admin , type that password, press Sign in.
+
+  Once you are in, you stay signed in on that browser for 8 hours, or until
+  you press "Sign out". Restarting the server signs everyone out.
+
+  MAKE IT A REAL PASSWORD. It is the only thing standing between the internet
+  and your scoreboard. 20+ random characters, not a word, not your name:
+        ADMIN_TOKEN=7Kq2-vX9pLm4-Rt8zWc1-Nb5H
+  Do not reuse a password you use anywhere else.
+
+  The file  server\.env  is private. It is already excluded from Git, so it
+  will never be uploaded. Never paste it into a chat or a screenshot.
+
+
+===============================================================================
+ PART 3 — WHAT YOU HAVE TO DO NOW  (the checklist)
+===============================================================================
+
+Do these in order. 1 and 2 are required; the site is fake until you do them.
+
+[ ] 3.1  PUT YOUR GOOGLE FORM LINK IN                        (REQUIRED)
+         Right now every Register button points at a dummy link.
+
+         a) Open your form at  https://forms.google.com
+         b) Click  Send  (top right)
+         c) Click the link tab — the chain icon
+         d) Copy the address
+         e) Open this file:
+              client\src\config\tournament.ts
+         f) Find the line that starts with:
+              registrationFormUrl:
+            Replace what is in the quotes with your link. Keep the quotes
+            and the comma. It should look like:
+              registrationFormUrl: 'https://forms.gle/abc123xyz',
+         g) Save. The browser reloads on its own.
+         h) Test it: click "Register your squad" on the site — it must open
+            YOUR form in a new tab.
+
+         Also check inside Google Forms: Responses tab > the toggle at the
+         top must be ON, or people reach a "no longer accepting responses"
+         page and you will not know.
+
+[ ] 3.2  SET THE ADMIN PASSWORD                              (REQUIRED)
+         See the bottom of PART 2. Without it you cannot post scores.
+
+[ ] 3.3  FILL IN YOUR REAL TOURNAMENT DETAILS
+         One file holds all the text and numbers:
+              client\src\config\tournament.ts
+         Change: tournament name, edition, prize amounts, entry fee,
+         total slots, dates, map list, WhatsApp/Discord/Instagram links,
+         email, rules text, FAQ.
+         Dates look like this (the +05:30 means IST — keep it):
+              registrationClosesAt: '2026-09-15T23:59:00+05:30',
+
+[ ] 3.4  FILL IN THE BLANKS IN THE TERMS               (REQUIRED before launch)
+         The full Terms & Conditions are in:
+              client\src\config\terms.ts
+         Open it and search for the character  [
+         Every square bracket is a decision only you can make:
+              [16]           minimum age
+              [YOUR CITY]    which courts have jurisdiction
+              [1 season]     how long a ban lasts
+              [48 hours...]  when the roster locks
+         Names, dates, slot count and prize money are NOT in brackets — those
+         are pulled from tournament.ts automatically.
+
+         If you change any wording later, also change this line near the top:
+              export const TERMS_VERSION = '2026-08-15';
+         Bumping it makes everyone accept again instead of carrying over an
+         acceptance of wording they never saw.
+
+[ ] 3.5  PUT YOUR OWN BACKGROUND IMAGE IN
+         TWO WAYS — both work, pick either:
+
+         a) From the admin page (easiest, and works on the live site):
+              open /admin > "Look and sound" > Background image > Choose File
+            Nothing to redeploy. This is the way to do it between tournaments.
+
+         b) By file, if you prefer:
+              save it as  client\public\media\bg.jpg
+            (.webp and .png also work.)
+
+         It is blurred heavily, so a low-res image is fine; what matters is
+         the colours. A wide image (1600x900 or bigger) fits best. Under 6 MB.
+
+         The same panel also takes a BACKGROUND VIDEO. It plays on desktop
+         only — never on phones, metered connections, or reduced-motion
+         devices, which keep the still image instead. Keep it 6-12 seconds,
+         silent, under 12 MB.
+
+         NOTE ON THE THREE IMAGES YOU SENT ME: those are Krafton's official
+         BGMI/PUBG artwork. I did not put them in the project. A tournament
+         site handing out real prize money using Krafton's promo art is the
+         kind of thing that gets a takedown notice or an Instagram strike.
+         A screenshot YOU took in-game gives the same look, blurred, with
+         no risk. Your call — the folder is there either way.
+
+[ ] 3.6  PUT YOUR OWN SOUNDS IN  (optional)
+         Same two ways as the image:
+
+         a) /admin > "Look and sound" > Background sound / Click sound
+         b) or drop the files in  client\public\audio\  as:
+              ambient.mp3    the background loop
+              click.mp3      the tick when a button is pressed
+
+         For the Zedge sound you sent: open that page, download the file,
+         then either upload it in /admin as the Click sound, or rename it to
+         click.mp3 and put it in that folder. No code change either way.
+
+         Delete both and the sound button removes itself from the site.
+
+         WHY SOUND DOES NOT PLAY THE MOMENT THE PAGE OPENS:
+         Chrome, Safari and every other browser BLOCK audio until the
+         visitor taps or clicks something. No website can get around this.
+         So: first visit = silent until they press the sound button. After
+         that the choice is remembered, and on their next visit the sound
+         starts at their first tap anywhere on the page.
+
+[ ] 3.7  ADD THE SAME TICK BOX TO THE GOOGLE FORM ITSELF
+         The website now makes people tick "I accept the Terms & Conditions"
+         before the form opens. That is a good gate, but it is NOT your proof
+         — it lives in the visitor's own browser.
+
+         The record that matters is in the form. In Google Forms add a
+         question:
+              Type:      Checkboxes
+              Question:  I have read and accept the Terms & Conditions
+                         (paste your terms link or the site address)
+              Option:    I accept
+              Required:  ON
+
+         Now every response row is timestamped acceptance, per squad, in your
+         responses sheet — which is what you would actually need if a
+         disqualified team argues later.
+
+[ ] 3.8  CHECK IT ON YOUR PHONE (before you tell anyone about it)
+         Most of the people registering will be on a phone, so test there.
+         With  npm run dev  running, the terminal prints two addresses:
+
+              [WEB]  Local:    http://localhost:5173/
+              [WEB]  Network:  http://192.168.1.8:5173/     <-- this one
+
+         Type the Network one into your phone's browser, with the phone on
+         the same WiFi as the laptop. Check: the top bar fits, the countdown
+         runs, Register opens your form, and the standings table can be
+         swiped sideways.
+
+         If the phone cannot open it, it is almost always Windows Firewall —
+         allow Node.js on private networks when the popup appears, or just
+         skip ahead and test on the deployed site instead (PART 7).
+
+[ ] 3.9  PUT IT ONLINE
+         See PART 7.
+
+
+===============================================================================
+ PART 4 — WHICH FILE TO EDIT FOR WHAT
+===============================================================================
+
+  ALL text, dates, prizes, rules, FAQ, contact links
+      client\src\config\tournament.ts
+      >> This is the only file you need for normal changes.
+
+  The Terms & Conditions, and the version number that re-asks everyone
+      client\src\config\terms.ts
+
+  The background image / video, and both sounds
+      /admin  >  "Look and sound"        <<< no files, no redeploy
+      or by file:
+      client\public\media\bg.jpg
+      client\public\audio\ambient.mp3
+      client\public\audio\click.mp3
+
+  The admin password / database settings
+      server\.env                         (you create this, from .env.example)
+
+  Standings, if you ever want to edit them by hand instead of using /admin
+      server\data\results.json
+
+  Colours and spacing (only if you want to change the look)
+      client\src\styles\index.css
+      - the six colours are at the very top, under :root
+      - the background image darkness is under .backdrop-plate / .backdrop-wash
+
+  Things you should not need to touch
+      client\src\sections\      the page sections
+      client\src\components\    buttons, tables, the top bar
+      server\src\               the API
+
+
+===============================================================================
+ PART 5 — MATCH NIGHT: PUTTING SCORES UP
+===============================================================================
+
+  5.1  Open the admin page
+         on your laptop:   http://localhost:5173/admin
+         once deployed:    https://your-site-address/admin
+
+  5.2  Type the admin password (the ADMIN_TOKEN from server\.env).
+       It is remembered until you close the browser tab.
+
+  5.3  Pick the stage tab: Qualifiers / Semi-finals / Grand finals.
+
+  5.4  Set the status:
+         pending   = not started (board shows the "this board fills up" text)
+         live      = in progress (a pulsing LIVE NOW badge appears)
+         complete  = finished    (shows FINAL)
+
+  5.5  Write the note if you want one. It shows under the board, e.g.
+       "Group A of 16. Top 4 advance."
+
+  5.6  Click  + Add squad  and fill the row:
+         Tag             short tag, e.g. PHX  (max 5 letters)
+         Squad name      e.g. Phoenix Rising
+         Matches         how many matches they have played
+         Placement pts   total placement points so far
+         Kill pts        total kill points so far
+
+       You do NOT type total or rank. Total adds up as you type, and the
+       ranking is worked out from it automatically.
+
+  5.7  Click  Save Qualifiers  (or whichever stage).
+       You will see a green line: "Qualifiers saved — 12 squads live on
+       the site."
+
+  5.8  The public page updates itself within 60 seconds. Nobody has to
+       refresh. You can leave the standings section open on a second
+       screen to watch it land.
+
+  5.9  Slots: the "Slots" box at the top of the admin page controls the
+       "147 / 256" counter in the header bar. Update it as registrations
+       come in. Untick "Registration open" after the deadline and every
+       Register button turns into a dead "Registrations closed" button.
+
+  TIP: rows without both a tag and a name are thrown away on save, so a
+  half-typed row can never break the public board.
+
+  5.10 NEXT TOURNAMENT: the "Look and sound" panel on the same page swaps the
+       background image, the background video, the ambient loop and the click
+       sound. Upload, reload the public site, done — no code, no redeploy.
+       "Remove" puts the shipped placeholder back.
+
+       Where those uploads live: in MongoDB if you set it up (PART 7A), which
+       is the only way they survive a restart on free hosting. Without a
+       database they are written next to results.json, which is fine on your
+       laptop and wiped on a hosted restart.
+
+==============================================================================
+ PART 5B — THE TERMS TICK BOX
+==============================================================================
+
+  What a visitor sees:
+
+    1. They press any "Register" button.
+    2. A box appears: "One thing before you register", with a tick box and
+       "Terms & Conditions" as a link.
+    3. Pressing the link opens the full terms, scrollable, on top.
+    4. The "Open the registration form" button does nothing until the box is
+       ticked — pressing it early says "Tick the box to continue."
+    5. Once ticked, the form opens in a new tab, and their acceptance is
+       remembered so it does not nag them again.
+
+  In the registration section further down the page, the same tick box sits
+  directly above the button, exactly like the screenshot you sent. Ticking it
+  there means the button opens the form straight away.
+
+  The footer also has a "Terms & Conditions" link, so anyone can read them
+  without starting a registration.
+
+  What is remembered, and where: one line in the visitor's own browser saying
+  which VERSION they accepted. Change TERMS_VERSION in
+  client\src\config\terms.ts and everyone is asked again. Nothing about this
+  is stored on your server — see 3.7 for the record that actually counts.
+
+
+===============================================================================
+ PART 6 — THE BACKEND: WHAT IT IS FOR
+===============================================================================
+
+  You asked what the backend is even for. Straight answer:
+
+  MOST of this site does not need one. Registration is a Google Form. The
+  rules, format, prize split and FAQ are fixed text.
+
+  The server exists for ONE thing: STANDINGS THAT CHANGE WHILE PEOPLE ARE
+  WATCHING. On a match night you type scores into /admin and every phone
+  looking at the site sees them within a minute — with no rebuilding, no
+  re-uploading, no redeploying between matches.
+
+  It also does three small things that follow from that:
+    - keeps the slot counter (147 / 256) in one place
+    - flips registration open/closed without an upload
+    - counts how many people clicked through to your form (no names, no
+      emails, no personal data — just a count)
+
+  IF YOU DECIDE YOU DO NOT WANT IT:
+  You can delete the server folder, move results.json into the client, and
+  this becomes a plain static site you can host free forever on Netlify.
+  The cost is that updating scores means editing a file and re-uploading
+  the site after every match. Nothing in the design breaks — the site
+  already falls back to a built-in copy of the standings whenever the
+  server cannot be reached.
+
+
+===============================================================================
+ PART 7 — PUTTING IT ONLINE (DEPLOY)
+===============================================================================
+
+  HOW IT WORKS ONCE DEPLOYED
+  --------------------------
+  On your laptop the site (5173) and the server (4000) are two programs.
+  In production they become ONE: the server serves the built site AND the
+  API on a single address. So you deploy ONE thing, and get:
+
+        https://your-site            the site
+        https://your-site/admin      your score entry page
+        https://your-site/api/...    the API the site talks to
+
+  You do not have to configure any addresses for this. It already works.
+
+
+  ------------------------------------------------------------------------
+  STEP A — GET A DATABASE  (do this first — 10 minutes, free)
+  ------------------------------------------------------------------------
+
+  WHY: on free hosting, the hard disk is wiped every time the app restarts
+  or you deploy an update. If your scores live in results.json on that
+  disk, they disappear at the worst possible moment. A database lives
+  somewhere else and survives.
+
+  On your laptop you do NOT need this. For a live tournament you do.
+
+  A.1  Go to  https://www.mongodb.com/atlas  and make a free account.
+  A.2  Create a free cluster — the M0 / FREE tier. Any region near India
+       (Mumbai) is good.
+  A.3  Database Access (left menu) > Add New Database User
+         - username: dropzone
+         - password: click Autogenerate, then COPY IT somewhere safe
+         - role: Read and write to any database
+  A.4  Network Access (left menu) > Add IP Address
+         - choose "Allow access from anywhere" (0.0.0.0/0)
+         - this is normal for hosted apps; the username/password is the lock
+  A.5  Deployment > Database > Connect > Drivers
+         - copy the connection string. It looks like:
+             mongodb+srv://dropzone:<password>@cluster0.abcde.mongodb.net/
+         - replace <password> with the real password from A.3
+         - KEEP THIS. You paste it in step C.
+
+  Want to test it on your laptop first? Put it in server\.env :
+         MONGODB_URI=mongodb+srv://dropzone:realpassword@cluster0....
+         MONGODB_DB=dropzone
+  Restart  npm run dev  and open  http://localhost:4000/api/health
+  It should now say  "store":"mongo"  instead of  "store":"file".
+  On the first connection it copies your current results.json into the
+  database automatically.
+
+
+  ------------------------------------------------------------------------
+  STEP B — PUT THE CODE ON GITHUB
+  ------------------------------------------------------------------------
+
+  Hosting services deploy from a Git repository.
+
+  B.1  Install Git if you do not have it:  https://git-scm.com/downloads
+  B.2  Make a GitHub account:  https://github.com
+  B.3  On GitHub click  New repository , name it  bgmi-tournament ,
+       keep it PRIVATE, and do NOT tick "add a README".
+  B.4  In PowerShell, in the project folder:
+
+         git init
+         git add .
+         git commit -m "Drop Zone Open tournament site"
+         git branch -M main
+         git remote add origin https://github.com/YOURNAME/bgmi-tournament.git
+         git push -u origin main
+
+  The .gitignore file already stops node_modules and server\.env from
+  being uploaded. Your admin password and database password stay on your
+  machine — that is correct and intended.
+
+
+  ------------------------------------------------------------------------
+  STEP C — DEPLOY  (Render — free)
+  ------------------------------------------------------------------------
+
+  C.1  Go to  https://render.com  and sign up with your GitHub account.
+  C.2  New  >  Web Service .
+  C.3  Connect the  bgmi-tournament  repository.
+  C.4  Fill in:
+
+         Name              dropzone-open      (becomes your web address)
+         Region            Singapore          (closest to India)
+         Branch            main
+         Runtime           Node
+         Build Command     npm install && npm run build
+         Start Command     npm start
+         Instance Type     Free
+
+  C.5  Scroll to  Environment Variables  and add these three:
+
+         Key            Value
+         -----------    -------------------------------------------------
+         ADMIN_TOKEN    your admin password (same idea as before, or a new
+                        stronger one — this is the live one now)
+         MONGODB_URI    the connection string from step A.5
+         MONGODB_DB     dropzone
+
+       Do NOT add PORT — Render sets that itself and the app already reads it.
+       Do NOT upload server\.env — these boxes replace it.
+
+  C.6  Click  Create Web Service  and wait 3-6 minutes for the first build.
+
+  C.7  You get an address like  https://dropzone-open.onrender.com
+       Check all four:
+         /                  the site loads
+         /admin             the admin page loads
+         /api/health        says  "store":"mongo"
+         click Register     opens your Google Form
+
+  C.8  To publish changes later: edit files on your laptop, then
+
+         git add .
+         git commit -m "what you changed"
+         git push
+
+       Render rebuilds and redeploys by itself in a few minutes.
+
+
+  ------------------------------------------------------------------------
+  ONE THING TO KNOW ABOUT THE FREE TIER
+  ------------------------------------------------------------------------
+
+  Render's free service goes to sleep after about 15 minutes with no
+  visitors. The next person to open the site waits roughly 30-60 seconds
+  for it to wake up. Everyone after them gets it instantly.
+
+  For a normal week that is fine. On the night registrations close, or
+  during a match, it is not. Three ways out:
+
+    1. Pay for the Starter plan (about $7/month) for the tournament month,
+       then downgrade. Simplest and most reliable.
+    2. Use Railway (https://railway.app) instead — same steps, no sleeping,
+       runs on a monthly free credit.
+    3. Deploy on a small VPS if you already have one.
+
+  Whatever you choose, open the site yourself 15 minutes before you share
+  the link anywhere, so the first real visitor never hits a cold start.
+
+
+  ------------------------------------------------------------------------
+  YOUR OWN DOMAIN  (optional)
+  ------------------------------------------------------------------------
+  If you buy something like dropzoneopen.in from Hostinger/GoDaddy/
+  Namecheap: in Render open your service > Settings > Custom Domain, add
+  the domain, and copy the DNS record it shows you into your domain
+  provider's DNS page. HTTPS is set up automatically. It takes 10 minutes
+  to a few hours to start working.
+
+
+===============================================================================
+ PART 7B — SECURITY: WHAT IS LOCKED, AND WHAT IS YOUR JOB
+===============================================================================
+
+  WHAT THE CODE DOES FOR YOU
+  --------------------------
+
+  * /admin shows nothing but a password box until the SERVER confirms you are
+    signed in. Not hidden with CSS — the score fields, slot fields and upload
+    buttons are not built at all until then.
+
+  * The password is never stored in the browser. You send it once; you get
+    back a session cookie marked HttpOnly, which means JavaScript cannot read
+    it, so even a hypothetical script injection cannot steal it. Verified:
+    document.cookie is empty even while signed in.
+
+  * 8 wrong passwords from one address locks that address out for 15 minutes,
+    including the correct password. That turns password guessing from
+    "thousands per second" into "32 per hour".
+
+  * The password is compared in constant time, so the failure speed does not
+    leak how much of it was right.
+
+  * Every write endpoint refuses everything without a valid session — checked
+    for standings, slots and media. With no ADMIN_TOKEN set, they refuse
+    everyone including you.
+
+  * Uploads are checked byte by byte, not by their name or their claimed type.
+    An .svg renamed to .png is rejected, because an SVG served from your own
+    domain can run scripts on your site. Only real PNG/JPEG/WebP/GIF,
+    MP4/WebM, MP3/WAV/OGG files are accepted.
+
+  * The browser is told: do not put this page in a frame, do not guess file
+    types, do not leak the address to other sites, and only run scripts that
+    came from this site (a Content-Security-Policy). Verified with zero
+    console errors on both pages.
+
+  * The API answers no other website. There is no CORS header at all unless
+    you set ALLOWED_ORIGIN, so a page on another domain cannot call your API
+    from a visitor's browser.
+
+  * /admin is marked noindex, and robots.txt disallows /admin and /api/, so
+    it should not turn up in Google.
+
+  * /api/health used to print the folder path on the server (with your
+    Windows username in it) to anyone who asked. It now only says "file" or
+    "mongo" unless you are signed in.
+
+  WHAT IS STILL YOUR JOB
+  ----------------------
+
+  1. A LONG RANDOM ADMIN_TOKEN. Everything above is pointless if the password
+     is "admin123". Nothing can save you from a guessable password.
+
+  2. USE HTTPS IN PRODUCTION. Render and Railway give you https:// for free —
+     use that address, never a plain http:// one. Over http, the password
+     crosses the network readable.
+
+  3. DO NOT SHARE THE LINK OR THE PASSWORD. There is one password, not per-
+     person accounts. Everyone who has it can change every score. If someone
+     leaves the admin team, change ADMIN_TOKEN on the host and redeploy —
+     that signs everyone out.
+
+  4. DO NOT COMMIT server\.env. It is already in .gitignore. Before your
+     first push, run:
+           git status
+     and make sure .env is NOT in the list of files to be committed.
+
+  5. THE STANDINGS ARE PUBLIC, AND THEY SHOULD BE. Anyone can read
+     /api/standings — that is the same data the site shows everyone. Nothing
+     private is stored on this server: no names, no emails, no phone numbers,
+     no payment details. All of that lives in your Google Form responses,
+     under your Google account. This site never sees it.
+
+  WHAT THIS SETUP IS NOT
+  ----------------------
+
+  It is one shared password for a community tournament scoreboard, hardened
+  sensibly. It is not per-admin accounts, audit logs, or two-factor login. If
+  you ever grow to a team where you need to know WHO changed a score, that is
+  the point to ask for real accounts.
+
+
+===============================================================================
+ PART 8 — IF SOMETHING BREAKS
+===============================================================================
+
+  "npm is not recognized"
+      Node.js is not installed, or the terminal was open before you
+      installed it. Install Node, close PowerShell, open it again.
+
+  The terminal shows port 5174 or 5175 instead of 5173
+      An older copy is still running and holding 5173. Either use the
+      address it printed, or free the port and restart:
+          taskkill /F /IM node.exe
+          npm run dev
+
+  "Port 4000 is already in use"
+      Same cause, same fix:
+          taskkill /F /IM node.exe
+      then  npm run dev  again. Note this stops ALL Node programs on the
+      machine, which is fine unless you are running something else in Node.
+
+  The site opens but the standings never change after I save in /admin
+      - Check  http://localhost:4000/api/health  is reachable.
+      - The public page refreshes every 60 seconds — wait a minute.
+      - If the board says "saved copy" at the bottom, the site cannot
+        reach the server; it is showing its built-in backup. Restart
+        npm run dev.
+
+  The admin page says "Admin is switched off"
+      ADMIN_TOKEN is not set. On your laptop: server\.env. On Render:
+      Environment Variables. Restart/redeploy after adding it.
+
+  "Wrong password" but I am sure it is right
+      It must match ADMIN_TOKEN character for character, with no spaces at
+      either end. A trailing space in the .env file is the usual culprit.
+
+  "Too many attempts. Try again in 15 minutes."
+      Eight wrong tries locks your address for 15 minutes — this is the
+      brute-force protection working. Wait it out, or restart the server
+      (npm run dev) to clear it on your own machine.
+
+  I was signed in and suddenly got sent back to the password box
+      Sessions last 8 hours, and a server restart ends them. Sign in again.
+      Nothing you had already saved is affected.
+
+  Sound does not play
+      - Press the sound button — browsers block audio until you interact.
+      - If the button is not there at all, both audio files are missing
+        from client\public\audio\ . Run  npm run media  to regenerate the
+        placeholders.
+
+  I uploaded a background in /admin but the site still looks the same
+      - Reload the public site (Ctrl + Shift + R). The upload is instant but
+        the open tab is still showing the old one.
+      - Check /api/media in the browser — your file should be listed there.
+      - If it says "Admin API is off", ADMIN_TOKEN is not set.
+
+  Uploads disappeared after the hosted site restarted
+      Expected without a database — free hosting wipes the disk. Do PART 7A
+      (MongoDB Atlas) and re-upload; after that they persist.
+
+  The background image does not show
+      - The file must be exactly  client\public\media\bg.jpg
+      - Hard refresh the browser: Ctrl + Shift + R
+      - It is heavily blurred and darkened on purpose. To make it stronger,
+        open client\src\styles\index.css , find  .backdrop-plate , and
+        raise the brightness number (0.5 -> 0.7).
+
+  Everything looks broken after I edited tournament.ts
+      You probably deleted a comma or a quote. The terminal running
+      npm run dev prints the file and line number. Undo with Ctrl+Z.
+
+  Deployed site shows an old version
+      Render deploys on git push. Check the Events tab in Render for a
+      failed build, and that you actually committed and pushed.
+
+
+===============================================================================
+ PART 9 — COMMAND CHEAT SHEET
+===============================================================================
+
+  Run these in PowerShell, inside the project folder.
+
+    npm install               install packages (first time, and after a pull)
+    npm run dev               start the site + server for development
+                              site  -> http://localhost:5173
+                              admin -> http://localhost:5173/admin
+    Ctrl + C                  stop it
+
+    npm run build             build the finished site (needed before deploy)
+    npm start                 run the finished build locally on one port
+                              -> http://localhost:4000  and  /admin
+
+    npm run media             regenerate the placeholder sounds + background
+    npm run seed -- --sample --force
+                              fill the standings with 16 fake squads so you
+                              can see how a full board looks.
+                              WARNING: this overwrites real scores.
+
+    taskkill /F /IM node.exe  force-stop anything left running
+
+  Addresses
+    http://localhost:5173         the site (development)
+    http://localhost:5173/admin   score entry
+    http://localhost:4000/api/health   is the server alive, and where is it
+                                       saving ("file" or "mongo")
+
+===============================================================================
+ SHORT VERSION — IF YOU ONLY DO FIVE THINGS
+===============================================================================
+
+  1. npm install     then    npm run dev      then open localhost:5173
+     (your Google Form link is already in — done)
+  2. Copy .env.example to server\.env and set ADMIN_TOKEN=something-long
+  3. Fill in every [BRACKET] in client\src\config\terms.ts
+  4. Open localhost:5173/admin , type that password, and use "Look and
+     sound" to upload your background image
+  5. On the same page, put in a test squad and save it, to prove the whole
+     loop works before the tournament. Then add the acceptance checkbox to
+     the Google Form itself (3.7).
+
+===============================================================================

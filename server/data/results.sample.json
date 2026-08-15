@@ -1,0 +1,41 @@
+{
+  "updatedAt": "2026-09-21T22:40:00+05:30",
+  "stages": {
+    "qualifiers": {
+      "label": "Qualifiers",
+      "status": "complete",
+      "note": "Group A of 16. Top 4 advance to the semi-finals.",
+      "teams": [
+        { "tag": "PHX", "name": "Phoenix Rising", "matches": 4, "placementPts": 34, "killPts": 41 },
+        { "tag": "VYP", "name": "Viper Six", "matches": 4, "placementPts": 31, "killPts": 38 },
+        { "tag": "K9X", "name": "Kilo Nine", "matches": 4, "placementPts": 26, "killPts": 35 },
+        { "tag": "DRF", "name": "Driftwood", "matches": 4, "placementPts": 24, "killPts": 22 },
+        { "tag": "SHK", "name": "Shrike Squad", "matches": 4, "placementPts": 19, "killPts": 27 },
+        { "tag": "MRB", "name": "Mirabelle", "matches": 4, "placementPts": 17, "killPts": 20 },
+        { "tag": "GHX", "name": "Ghost Axis", "matches": 4, "placementPts": 12, "killPts": 18 },
+        { "tag": "TDR", "name": "Tundra", "matches": 4, "placementPts": 9, "killPts": 14 },
+        { "tag": "ONX", "name": "Onyx Lane", "matches": 4, "placementPts": 6, "killPts": 11 },
+        { "tag": "RVN", "name": "Ravine Boys", "matches": 4, "placementPts": 4, "killPts": 9 }
+      ]
+    },
+    "semis": {
+      "label": "Semi-finals",
+      "status": "live",
+      "note": "Lobby B · match 3 of 5 in progress.",
+      "teams": [
+        { "tag": "VYP", "name": "Viper Six", "matches": 3, "placementPts": 22, "killPts": 26 },
+        { "tag": "PHX", "name": "Phoenix Rising", "matches": 3, "placementPts": 21, "killPts": 24 },
+        { "tag": "SHK", "name": "Shrike Squad", "matches": 3, "placementPts": 15, "killPts": 19 },
+        { "tag": "K9X", "name": "Kilo Nine", "matches": 3, "placementPts": 13, "killPts": 16 },
+        { "tag": "GHX", "name": "Ghost Axis", "matches": 3, "placementPts": 8, "killPts": 12 },
+        { "tag": "DRF", "name": "Driftwood", "matches": 3, "placementPts": 5, "killPts": 7 }
+      ]
+    },
+    "finals": {
+      "label": "Grand finals",
+      "status": "pending",
+      "note": "16 squads, one lobby, casted live.",
+      "teams": []
+    }
+  }
+}

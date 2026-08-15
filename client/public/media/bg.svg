@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a0c0e"/>
+      <stop offset="38%" stop-color="#2a1a12"/>
+      <stop offset="63%" stop-color="#8a3d12"/>
+      <stop offset="78%" stop-color="#d8631a"/>
+      <stop offset="100%" stop-color="#2a1508"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="62%" cy="72%" r="26%">
+      <stop offset="0%" stop-color="#ffd9a0" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#ff8a1e" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ff6b1a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <rect width="1600" height="900" fill="url(#sun)"/>
+
+  <!-- far ridge -->
+  <path d="M0 690 L180 636 L330 668 L520 596 L700 650 L900 590 L1080 646 L1290 604 L1450 652 L1600 618 L1600 900 L0 900 Z"
+        fill="#1a1207" opacity="0.85"/>
+  <!-- near ridge -->
+  <path d="M0 782 L220 724 L420 768 L640 706 L860 760 L1090 712 L1320 764 L1600 720 L1600 900 L0 900 Z"
+        fill="#0d0a06"/>
+  <!-- foreground -->
+  <path d="M0 860 L300 828 L620 864 L980 826 L1340 862 L1600 832 L1600 900 L0 900 Z" fill="#07080a"/>
+</svg>

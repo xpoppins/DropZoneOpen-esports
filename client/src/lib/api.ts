@@ -1,6 +1,6 @@
 import localResults from '../data/results.json';
 
-export type StageKey = 'qualifiers' | 'semis' | 'finals';
+export type StageKey = 'qualifiers_A' | 'qualifiers B' | 'finals';
 export type StageStatus = 'pending' | 'live' | 'complete';
 
 export type TeamRow = {
@@ -29,7 +29,7 @@ export type LiveState = {
   updatedAt: string;
 };
 
-export const STAGE_ORDER: StageKey[] = ['qualifiers', 'semis', 'finals'];
+export const STAGE_ORDER: StageKey[] = ['qualifiers_A', 'qualifiers B', 'finals'];
 
 /** Bundled copy of results.json — used when the API is unreachable. */
 export const FALLBACK_RESULTS = localResults as Results;
@@ -49,7 +49,7 @@ async function getJSON<T>(path: string, timeoutMs = 3500): Promise<T> {
 export async function fetchResults(): Promise<{ data: Results; live: boolean }> {
   try {
     const data = await getJSON<Results>('/api/standings');
-    if (!data?.stages?.qualifiers) throw new Error('malformed standings payload');
+    if (!data?.stages?.qualifiers_A) throw new Error('malformed standings payload');
     return { data, live: true };
   } catch {
     return { data: FALLBACK_RESULTS, live: false };

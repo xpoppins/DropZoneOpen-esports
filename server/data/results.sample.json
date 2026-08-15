@@ -1,8 +1,8 @@
 {
   "updatedAt": "2026-09-21T22:40:00+05:30",
   "stages": {
-    "qualifiers": {
-      "label": "Qualifiers",
+    "qualifiers A": {
+      "label": "Qualifiers Group A",
       "status": "complete",
       "note": "Group A of 16. Top 4 advance to the semi-finals.",
       "teams": [
@@ -18,8 +18,8 @@
         { "tag": "RVN", "name": "Ravine Boys", "matches": 4, "placementPts": 4, "killPts": 9 }
       ]
     },
-    "semis": {
-      "label": "Semi-finals",
+    "qualifiers B": {
+      "label": "Qualifiers Group B",
       "status": "live",
       "note": "Lobby B · match 3 of 5 in progress.",
       "teams": [

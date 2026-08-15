@@ -22,7 +22,7 @@ export const CONFIG = {
   registrationFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLScow3CMevRw5aQrQbKbWYlONlmUCpizTiDG92NIXWFvZtpB7g/viewform',
 
   tournamentName: 'Drop Zone Open',
-  edition: 'Season 1',
+  edition: ' League First',
   tagline: 'No second circle.',
   organiser: 'Drop Zone Collective',
   region: 'India · Asia server',
@@ -33,7 +33,7 @@ export const CONFIG = {
   tournamentStartsAt: '2026-09-20T18:00:00+05:30',
 
   mode: 'Squad TPP',
-  maps: ['Erangel', 'Miramar', 'Sanhok'],
+  maps: ['Erangel', 'Miramar', 'Rondo'],
 
   // Fallback values. If the API is reachable these are replaced by live counts.
   slots: { total: 32, filled: 11 },
@@ -94,36 +94,36 @@ export const CONFIG = {
       matches: '',
     },
     {
-      id: 'qualifiers',
-      label: 'Qualifiers',
+      id: 'qualifiers A',
+      label: 'Qualifiers Group A',
       window: '20 – 21 Sep · 6:00 PM IST',
-      detail: '256 squads across 16 groups. Top 4 of every group advance.',
-      maps: ['Erangel', 'Sanhok'],
-      matches: '4 matches per group',
+      detail: '16 squads, one lobby. Top 8 team move to the grand finals.',
+      maps: ['Erangel', 'Miramar','Rondo'],
+      matches: '3 matches per group',
     },
     {
-      id: 'semis',
-      label: 'Semi-finals',
+      id: 'qualifiers B',
+      label: 'Qualifiers Group B',
       window: '27 Sep · 6:00 PM IST',
-      detail: '64 squads, 4 lobbies. Top 4 per lobby move to the grand finals.',
-      maps: ['Erangel', 'Miramar', 'Sanhok'],
-      matches: '5 matches per lobby',
+      detail: '16 squads, one lobby. Top 8 team move to the grand finals.',
+      maps: ['Erangel', 'Miramar', 'Rondo'],
+      matches: ' matches per lobby',
     },
     {
       id: 'finals',
       label: 'Grand finals',
       window: '4 Oct · 7:00 PM IST',
       detail: '16 squads, one lobby, casted live. Cumulative points decide it.',
-      maps: ['Erangel', 'Miramar', 'Erangel'],
-      matches: '6 matches',
+      maps: ['Rondo','Erangel','Erangel','Miramar'],
+      matches: '4 matches',
     },
   ],
 
   // What a captain should have open in another tab before starting the form.
   registrationChecklist: [
-    'In-game names for all 4 players, plus 1 substitute',
+    'In-game names for all 4 players, plus 1 substitute (Optional)',
     'BGMI numeric UID for every player (Profile → the number under your IGN)',
-    "Captain's WhatsApp number — room IDs go here",
+    "Captains WhatsApp Group — room IDs go here",
     'Discord tag of the captain',
     'Player levels — every account must be 30+',
   ],
@@ -162,7 +162,7 @@ export const CONFIG = {
   faq: [
     {
       q: 'Is there an entry fee?',
-      a: 'No. Registration is free for every stage, from qualifiers through the grand finals. Nobody from the organising team will ever ask you for money to hold a slot — if someone does, screenshot it and send it to the organiser email.',
+      a: 'Yes,There is an entry fee. Please note that your slot will be firmly confirmed only after the successful payment of the registration fee.',
     },
     {
       q: 'How do I get the room ID and password?',

@@ -23,7 +23,7 @@ export default function Admin() {
   const [auth, setAuth] = useState<Auth>({ checked: false, authenticated: false, enabled: true });
   const [results, setResults] = useState<Results | null>(null);
   const [slots, setSlots] = useState<Slots | null>(null);
-  const [stage, setStage] = useState<StageKey>('qualifiers');
+  const [stage, setStage] = useState<StageKey>('qualifiers_A');
   const [message, setMessage] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 

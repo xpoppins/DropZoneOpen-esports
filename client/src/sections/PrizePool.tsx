@@ -1,19 +1,21 @@
-import { CONFIG } from '../config/tournament';
+import { CONFIG, feeCopy } from '../config/tournament';
+import type { EventSettings, Prize } from '../lib/api';
 import { Section } from '../components/ui/Section';
 import { formatMoney } from '../lib/format';
 
 /**
  * A prize is either cash (a number, in rupees) or something else you are handing
  * out (any text — "Certificates", "Gaming mouse", "Merch pack"). Text prizes get
- * no bar, because there is nothing to compare them against.
+ * no bar, because there is nothing to compare them against. Both come from the
+ * prize pool set in /admin.
  */
-type Prize = number | string;
-
-const money = (v: number) => formatMoney(v, CONFIG.prizePool.currency);
+const money = (v: number) => formatMoney(v, CONFIG.prizeCurrency);
 const isCash = (value: Prize): value is number => typeof value === 'number' && Number.isFinite(value);
 
-export function PrizePool() {
-  const p = CONFIG.prizePool;
+type Props = { event: EventSettings };
+
+export function PrizePool({ event }: Props) {
+  const p = event.prizePool;
 
   // Read as a supply-drop manifest: what is in the crate, and how big each share is.
   const lines: Array<{ code: string; label: string; amount: Prize; lead: boolean }> = [
@@ -32,7 +34,7 @@ export function PrizePool() {
       id="prize"
       title="One crate, five ways"
       intro={`Every rupee is paid to the captain within 14 working days of the final, and split by the squad. Entry stays ${
-        CONFIG.entryFee === 0 ? 'free' : `₹${CONFIG.entryFee}`
+        event.entryFee <= 0 ? 'free' : feeCopy(event.entryFee).stat
       }.`}
     >
       <div className="grid grid-cols-12 gap-y-12 gap-x-6">

@@ -1,0 +1,348 @@
+===============================================================================
+ MONGODB — WHAT IS IN THE DATABASE AND HOW IT GOT THERE
+ Drop Zone Open · reference for whoever maintains this
+===============================================================================
+
+CONTENTS
+  PART 1 .... Do you even need the database
+  PART 2 .... How the database gets created (you never create it by hand)
+  PART 3 .... The four collections, field by field
+  PART 4 .... Where each piece of data comes from
+  PART 5 .... Looking at it in MongoDB Compass
+  PART 6 .... Backups, resets and moving data
+  PART 7 .... Limits and things that will bite you
+  PART 8 .... What is NOT in the database
+
+
+===============================================================================
+ PART 1 — DO YOU EVEN NEED IT
+===============================================================================
+
+  The app runs in one of two modes, decided by a single line in server\.env :
+
+     MONGODB_URI=                      (empty)  → JSON FILE MODE
+     MONGODB_URI=mongodb+srv://...              → MONGODB MODE
+
+  JSON FILE MODE
+     Everything is stored in plain files under  server\data\  . Nothing to
+     install, nothing to log into. Good for your laptop.
+
+  MONGODB MODE
+     The same data, in a real database. You need this in production, because
+     free hosting wipes the disk on every restart — scores you typed at 9pm
+     would be gone by midnight.
+
+  Both modes behave identically from the outside. The code talks to one
+  interface (`Store` in server\src\store.ts) with two implementations. Nothing
+  in the site knows or cares which is running.
+
+  To check which is live, open:   http://localhost:4000/api/health
+     {"ok":true,"store":"file"}   → JSON files
+     {"ok":true,"store":"mongo"}  → the database
+
+  The server also prints it on boot:
+     [db] connected to MongoDB (dropzone)
+     [api] listening on http://localhost:4000 · store: MongoDB dropzone
+
+
+===============================================================================
+ PART 2 — HOW THE DATABASE IS CREATED
+===============================================================================
+
+  YOU NEVER CREATE ANYTHING BY HAND. No SQL, no "CREATE TABLE", no clicking
+  "new collection" in Compass. Here is the actual sequence:
+
+  2.1  You put a connection string in  server\.env  :
+
+           MONGODB_URI=mongodb+srv://USER:PASSWORD@cluster.mongodb.net/
+           MONGODB_DB=dropzone
+
+       MONGODB_DB is the database NAME. It does not have to exist yet.
+
+  2.2  The server starts and connects (server\src\store.ts).
+
+  2.3  MongoDB creates the database the first time something is written to it.
+       This is different from SQL — an empty database does not exist at all,
+       and that is normal.
+
+  2.4  Mongoose creates each COLLECTION the first time a document of that type
+       is saved. The shapes are declared in  server\src\models.ts  as schemas.
+       A "schema" here is validation living in the app, not a table definition
+       living in the database.
+
+  2.5  On the first boot against an empty database, the server imports
+       server\data\results.json  so the site is never blank. After that the
+       database is the source of truth and the JSON file is ignored.
+
+  COLLECTION NAMES
+       Mongoose lowercases and pluralises the model name automatically:
+
+           model('Stage')  → collection  stages
+           model('State')  → collection  states
+           model('Intent') → collection  intents
+           model('Media')  → collection  media
+
+  SO: a fresh Atlas cluster + first run = a `dropzone` database containing
+  `stages` and `states`. `intents` appears the first time someone clicks
+  Register. `media` appears the first time you upload a background.
+
+
+===============================================================================
+ PART 3 — THE FOUR COLLECTIONS
+===============================================================================
+
+  ---------------------------------------------------------------------------
+  3.1  stages          — THE SCOREBOARD (the important one)
+  ---------------------------------------------------------------------------
+
+  Exactly three documents, one per stage. They are never added to or deleted;
+  they are overwritten each time you press Save in /admin.
+
+  FIELD          TYPE       MEANING
+  -------------  ---------  ------------------------------------------------
+  key            string     'qualifiers' | 'semis' | 'finals'  (unique)
+  label          string     Shown on the tab, e.g. "Grand finals"
+  status         string     'pending' | 'live' | 'complete'
+                            pending  → board shows the "fills up here" text
+                            live     → pulsing LIVE NOW badge
+                            complete → FINAL badge
+  note           string     The line under the board, e.g.
+                            "Group A of 16. Top 4 advance."
+  teams          array      The squads — see below
+  createdAt      date       Added automatically by Mongoose
+  updatedAt      date       Added automatically; this drives "Last updated"
+
+  Each entry inside `teams`:
+
+  FIELD          TYPE       RULES
+  -------------  ---------  ------------------------------------------------
+  tag            string     Required, forced UPPERCASE, max 6 characters
+  name           string     Required, max 48 characters
+  matches        number     >= 0, defaults to 0
+  placementPts   number     >= 0, defaults to 0
+  killPts        number     >= 0, defaults to 0
+
+  NOT STORED, ON PURPOSE:  total  and  rank .
+  Total is placementPts + killPts, and rank is the position after sorting.
+  Both are worked out on the fly (`withTotals()` in client\src\lib\api.ts).
+  Storing them would let them drift out of sync with the numbers they come
+  from, and then the board would lie.
+
+  Team entries have no _id of their own ({ _id: false }) — they are part of
+  the stage document, not separate records.
+
+  ---------------------------------------------------------------------------
+  3.2  states          — SLOTS AND THE REGISTRATION SWITCH
+  ---------------------------------------------------------------------------
+
+  Exactly ONE document, forever. Its _id is the literal string "state".
+
+  FIELD              TYPE      MEANING
+  -----------------  --------  --------------------------------------------
+  _id                string    Always "state" — this is what keeps it single
+  slots.total        number    Total slots, e.g. 32
+  slots.filled       number    How many are taken, e.g. 11
+  registrationOpen   boolean   false → every Register button becomes a dead
+                               "Registrations closed" button, site-wide
+  createdAt/updatedAt date     Automatic
+
+  This is what the Slots box at the top of /admin edits.
+
+  ---------------------------------------------------------------------------
+  3.3  media           — BACKGROUND IMAGE, VIDEO AND THE TWO SOUNDS
+  ---------------------------------------------------------------------------
+
+  Up to FOUR documents, one per slot. Uploading again replaces the existing
+  document for that slot rather than adding a second one.
+
+  FIELD          TYPE      MEANING
+  -------------  --------  ---------------------------------------------
+  kind           string    'image' | 'video' | 'audio' | 'click' (unique)
+  contentType    string    e.g. 'image/jpeg', 'audio/mpeg'
+  size           number     Bytes
+  data           Buffer     THE ACTUAL FILE, stored inside the document
+  createdAt/updatedAt date  updatedAt is used as the cache-busting ?v= value
+
+  WHY THE FILE IS IN THE DATABASE: hosted disks are wiped on every restart,
+  so a file written to disk disappears. The database is the only place it
+  survives. This is why /admin can change the look of the site with no
+  redeploy.
+
+  ---------------------------------------------------------------------------
+  3.4  intents         — HOW MANY PEOPLE OPENED THE FORM
+  ---------------------------------------------------------------------------
+
+  One document per click on a Register button. Grows over time.
+
+  FIELD        TYPE     MEANING
+  -----------  -------  -----------------------------------------------
+  at           date     When it happened (indexed)
+  referrer     string   Which page they came from, if the browser said
+
+  THERE IS NOTHING PERSONAL IN HERE. No name, no email, no phone, no IP, no
+  cookie, no device id. It answers one question — "how many people got as far
+  as opening the form" — so you can compare it against actual form responses
+  and see how many drop off.
+
+  Read the count at:  GET /api/registrations/intent/count   (admin only)
+
+
+===============================================================================
+ PART 4 — WHERE EACH PIECE OF DATA COMES FROM
+===============================================================================
+
+  WHAT YOU SEE ON THE SITE          WHERE IT LIVES
+  --------------------------------  -----------------------------------------
+  Standings table                   stages collection
+  LIVE NOW / FINAL badge            stages.status
+  Note under the board              stages.note
+  "Last updated ..."                stages.updatedAt
+  "109 slots open" in the top bar   states.slots
+  Register button enabled/disabled  states.registrationOpen
+  Background image / video          media collection
+  Ambient loop and click sound      media collection
+  --------------------------------  -----------------------------------------
+  Tournament name, dates, prizes    client\src\config\tournament.ts  (CODE)
+  Rules, FAQ, schedule, contacts    client\src\config\tournament.ts  (CODE)
+  Terms & Conditions                client\src\config\terms.ts       (CODE)
+
+  The bottom three are NOT in the database. They are part of the site and
+  change only when you edit the file and redeploy. That is deliberate: they
+  change once a season, not once a match, and keeping them in code means they
+  are version-controlled and cannot be broken by a bad database write.
+
+  RULE OF THUMB
+      Changes DURING a tournament  → database  → edit in /admin
+      Changes BETWEEN tournaments  → config    → edit the file, redeploy
+
+
+===============================================================================
+ PART 5 — LOOKING AT IT IN COMPASS
+===============================================================================
+
+  5.1  Open MongoDB Compass.
+  5.2  Paste the SAME connection string that is in server\.env .
+  5.3  Connect. In the left panel open the  dropzone  database.
+  5.4  You will see: stages, states, media, intents  (only the ones that have
+       been written to at least once).
+
+  USEFUL THINGS TO DO THERE
+
+    See the finals board:
+        collection  stages   filter:  { key: "finals" }
+
+    See the slot counter:
+        collection  states   filter:  { _id: "state" }
+
+    See what has been uploaded, WITHOUT downloading megabytes of file:
+        collection  media
+        filter:     {}
+        projection: { kind: 1, contentType: 1, size: 1, updatedAt: 1 }
+        (leave `data` out or Compass will try to render the whole file)
+
+    Count form opens:
+        collection  intents  → the document count in the header
+
+  YOU CAN EDIT DOCUMENTS DIRECTLY IN COMPASS, BUT DO NOT. /admin validates
+  everything before it writes — tag length, numbers not negative, status one
+  of three values. Compass does not. A hand-edited document can break the
+  board for every visitor. Use Compass to LOOK; use /admin to CHANGE.
+
+  If Compass says "connect ECONNREFUSED 127.0.0.1:27017" it is trying to
+  reach a MongoDB on your own PC, not Atlas. Either start the local service,
+  or use the Atlas connection string instead.
+
+
+===============================================================================
+ PART 6 — BACKUPS, RESETS AND MOVING DATA
+===============================================================================
+
+  6.1  BACK UP BEFORE FINALS NIGHT
+       In Compass: open the collection → ... menu → Export Collection → JSON.
+       Do  stages  and  states  . That is your whole tournament.
+       Skip  media  (it is large and you still have the original files).
+
+  6.2  RESTORE
+       Compass → Import Data → the JSON file you exported.
+
+  6.3  START A NEW SEASON, EMPTY BOARD
+       Easiest: in /admin, open each stage, remove every squad, press Save.
+       Then set the slot count and tick Registration open.
+
+       Or from the project folder, with MONGODB_URI set:
+           npm run seed
+       which re-imports server\data\results.json over the database.
+
+       WARNING:  npm run seed -- --sample --force  fills the board with 16
+       FAKE squads. Never run that during a real tournament.
+
+  6.4  MOVE FROM FILES TO THE DATABASE
+       Put MONGODB_URI in server\.env and restart. If the database is empty,
+       results.json is imported automatically on first connect.
+
+  6.5  MOVE FROM THE DATABASE BACK TO FILES
+       Export  stages  from Compass, reshape into results.json, blank out
+       MONGODB_URI, restart. Rarely worth it — going the other way is the
+       normal direction.
+
+
+===============================================================================
+ PART 7 — LIMITS AND THINGS THAT WILL BITE YOU
+===============================================================================
+
+  7.1  ONE DOCUMENT CANNOT EXCEED 16 MB.
+       This is a hard MongoDB limit, not a setting. Because uploaded media
+       is stored inside a document, no single upload can approach 16 MB. The
+       app's own caps (image 6 MB, video 12 MB, ambient 6 MB, click 2 MB) sit
+       under it deliberately. Bigger files need GridFS or an external store,
+       which is a real code change.
+
+  7.2  ATLAS FREE TIER (M0) GIVES 512 MB TOTAL.
+       Standings use kilobytes. Media is what fills it — four uploads at the
+       maximum sizes is about 26 MB. You will not run out.
+
+  7.3  ATLAS PAUSES A FREE CLUSTER AFTER ~60 DAYS OF NO ACTIVITY.
+       Between seasons, this is likely. Log into Atlas and press Resume; the
+       data is still there. Check this a week before you announce anything.
+
+  7.4  "NETWORK ACCESS" MUST ALLOW YOUR HOST.
+       If the site cannot reach the database, Atlas is usually blocking the
+       IP. For a hosted app you need 0.0.0.0/0 in Atlas → Network Access.
+       That is normal — the username and password are the actual lock, which
+       is why that password must be strong.
+
+  7.5  A `.lean()` QUERY RETURNS RAW BSON, NOT NODE OBJECTS.
+       Binary fields come back wrapped, and Buffer.from() on the wrapper
+       silently produces an EMPTY buffer — the upload saves, the size looks
+       right, and the file serves as 0 bytes. This exact bug is why uploads
+       once appeared to work in /admin but never showed on the site. It is
+       fixed in `toBuffer()` in server\src\store.ts. If you ever add another
+       binary field, use that helper.
+
+  7.6  THE DATABASE PASSWORD IS IN server\.env AND MUST STAY THERE.
+       Never in .env.example, never in a screenshot, never in a commit. If
+       it leaks: Atlas → Database Access → Edit user → Autogenerate a new
+       password → update server\.env and your host's environment variables.
+
+
+===============================================================================
+ PART 8 — WHAT IS *NOT* IN THE DATABASE
+===============================================================================
+
+  Worth knowing, because people assume otherwise:
+
+  * NO PLAYER REGISTRATIONS. Names, IGNs, UIDs, phone numbers and Discord
+    tags are in your GOOGLE FORM RESPONSES, in your Google account. This
+    site never receives them and cannot see them. The biggest pile of
+    personal data in this project is a Google Sheet, not this database.
+
+  * NO ADMIN PASSWORD. It lives in ADMIN_TOKEN as an environment variable
+    and is never written to the database.
+
+  * NO LOGIN SESSIONS. They are held in the server's memory, which is why
+    restarting the server signs everyone out.
+
+  * NO ANALYTICS, NO VISITOR TRACKING, NO IP ADDRESSES. The only thing
+    counted anywhere is the anonymous form-open tally in `intents`.
+
+===============================================================================

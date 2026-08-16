@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CONFIG } from '../config/tournament';
-import { FALLBACK_RESULTS, fetchLiveState, fetchResults, type Results } from './api';
+import { CONFIG, DEFAULT_EVENT } from '../config/tournament';
+import { FALLBACK_RESULTS, fetchLiveState, fetchResults, type EventSettings, type Results } from './api';
 
 const POLL_MS = 60_000;
 
@@ -9,6 +9,8 @@ type State = {
   live: boolean;
   slots: { total: number; filled: number };
   registrationOpen: boolean;
+  /** Entry fee and dates as set in /admin, or the config defaults offline. */
+  event: EventSettings;
 };
 
 /**
@@ -22,6 +24,7 @@ export function useTournamentData(): State {
     live: false,
     slots: { total: CONFIG.slots.total, filled: CONFIG.slots.filled },
     registrationOpen: CONFIG.registrationOpen,
+    event: DEFAULT_EVENT,
   });
 
   const mounted = useRef(true);
@@ -34,6 +37,13 @@ export function useTournamentData(): State {
       live,
       slots: liveState?.slots ?? { total: CONFIG.slots.total, filled: CONFIG.slots.filled },
       registrationOpen: liveState?.registrationOpen ?? CONFIG.registrationOpen,
+      // An older database has no `event` yet, so fall back per-field rather
+      // than dropping the whole calendar on the floor.
+      event: {
+        entryFee: liveState?.event?.entryFee ?? DEFAULT_EVENT.entryFee,
+        schedule: { ...DEFAULT_EVENT.schedule, ...(liveState?.event?.schedule ?? {}) },
+        prizePool: { ...DEFAULT_EVENT.prizePool, ...(liveState?.event?.prizePool ?? {}) },
+      },
     });
   }, []);
 

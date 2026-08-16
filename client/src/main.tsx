@@ -9,7 +9,6 @@ import '@fontsource-variable/jetbrains-mono';
 import './styles/index.css';
 import App from './App';
 import { AudioProvider } from './lib/audio';
-import { ConsentProvider } from './lib/consent';
 
 // One extra page, one path check — a router would be more moving parts than the
 // whole feature. /admin ships as its own chunk, so visitors never download it.
@@ -27,9 +26,7 @@ createRoot(document.getElementById('root')!).render(
       </Suspense>
     ) : (
       <AudioProvider>
-        <ConsentProvider>
-          <App />
-        </ConsentProvider>
+        <App />
       </AudioProvider>
     )}
   </StrictMode>,

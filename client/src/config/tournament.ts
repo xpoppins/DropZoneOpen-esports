@@ -1,3 +1,6 @@
+import type { EventSettings, Prize } from '../lib/api';
+import { formatMoney } from '../lib/format';
+
 /* ============================================================================
  * HOW TO CONNECT YOUR GOOGLE FORM
  * ----------------------------------------------------------------------------
@@ -17,50 +20,96 @@
  * Live numbers (slots filled, standings) come from the API; see README.
  * ==========================================================================*/
 
+/* ── ENTRY FEE AND THE CALENDAR ────────────────────────────────────────────────
+ * Both are editable from /admin now, so these are only the STARTING values —
+ * what a fresh database begins with, and what the site falls back to when the
+ * API cannot be reached. Change them in /admin, not here.
+ *
+ * Dates are ISO 8601 with the +05:30 offset, so the countdown is right for a
+ * visitor anywhere in the world while still meaning "6pm IST" to you.
+ * ==========================================================================*/
+const ENTRY_FEE = 200 as number;
+
+export const DEFAULT_EVENT: EventSettings = {
+  entryFee: ENTRY_FEE,
+  schedule: {
+    registration: { startsAt: '2026-08-25T00:00:00+05:30', endsAt: '2026-09-15T23:59:00+05:30' },
+    qualifiers_a: { startsAt: '2026-09-20T18:00:00+05:30', endsAt: '2026-09-21T23:59:00+05:30' },
+    qualifiers_b: { startsAt: '2026-09-27T18:00:00+05:30', endsAt: '' },
+    finals: { startsAt: '2026-10-04T19:00:00+05:30', endsAt: '' },
+  },
+  // Each prize is either CASH (a plain number, in rupees) or TEXT in quotes for
+  // anything that is not money — 'Certificate', 'Gaming mouse', 'Merch pack'.
+  // Cash prizes get a proportional bar on the page; text prizes do not.
+  prizePool: {
+    total: 1300,
+    first: 1000 as Prize,
+    second: 200 as Prize,
+    third: 100 as Prize,
+    mvp: 'Certificate' as Prize,
+    mostKills: 'Certificate' as Prize,
+    // The line under the five prizes. Set it to '' to hide that box entirely.
+    participationNote: 'Every other squad that plays a match gets a participation certificate.',
+  },
+};
+
+/**
+ * Every sentence on the site that mentions money, derived from one number.
+ * It is a function rather than a constant because the fee is now live — the
+ * organiser can change it in /admin and the wording has to follow without a
+ * rebuild. Pass 0 and the site describes a free event.
+ */
+export function feeCopy(fee: number) {
+  const waived = fee <= 0;
+  const perSquad = `₹${fee} per squad`;
+
+  return {
+    /** For the stat tile in the hero manifest. */
+    stat: waived ? 'Free' : `₹${fee}`,
+    /** Short fragment for the hero paragraph. */
+    short: waived ? 'Free entry' : perSquad,
+    /** The reassurance line under the register button and in the consent box. */
+    note: waived
+      ? 'Entry is free — nobody from this tournament will ask you to pay for a slot.'
+      : `Entry is ${perSquad}. Your slot is confirmed once the fee is paid — and only through the channels listed on this site.`,
+    /** The FAQ answer. */
+    faq: waived
+      ? 'No. Registration is free for every stage, from the qualifier groups through the grand finals. Nobody from the organising team will ever ask you for money to hold a slot — if someone does, screenshot it and send it to the organiser email.'
+      : `Yes — ${perSquad}. Your slot is confirmed only once the fee is paid. Pay only through the channels listed on this site; if anyone else asks you for money, screenshot it and send it to the organiser email.`,
+    /** For the terms clause. */
+    terms: waived ? 'Free' : `${formatMoney(fee)} per squad`,
+  };
+}
+
 export const CONFIG = {
   // ── SWAP THIS ONE LINE WITH YOUR GOOGLE FORM LINK ──
   registrationFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLScow3CMevRw5aQrQbKbWYlONlmUCpizTiDG92NIXWFvZtpB7g/viewform',
 
   tournamentName: 'Drop Zone Open',
-  edition: 'Season 1',
+  edition: 'League First',
   tagline: 'No second circle.',
   organiser: 'Drop Zone Collective',
   region: 'India · Asia server',
 
-  // ISO 8601 with the +05:30 offset so the countdown is correct for every visitor,
-  // wherever they are, while still meaning "midnight IST" to you.
-  registrationClosesAt: '2026-09-15T23:59:00+05:30',
-  tournamentStartsAt: '2026-09-20T18:00:00+05:30',
-
   mode: 'Squad TPP',
-  maps: ['Erangel', 'Miramar', 'Sanhok'],
+  maps: ['Erangel', 'Miramar', 'Rondo'],
 
   // Fallback values. If the API is reachable these are replaced by live counts.
   slots: { total: 32, filled: 11 },
 
-  // Each prize is either CASH (a plain number, in rupees) or TEXT in quotes for
-  // anything that is not money — 'Certificates', 'Gaming mouse', 'Merch pack'.
-  // Cash prizes get a proportional bar on the page; text prizes do not.
-  // Keep `total` equal to the cash prizes added up, or the page contradicts itself.
-  prizePool: {
-    currency: 'INR',
-    total: 1300,
-    first: 1000,
-    second: 200,
-    third: 100,
-    mvp: 'Certificate',
-    mostKills: 'Certificate',
-    // The line under the five prizes. Set it to '' to hide that box entirely.
-    participationNote: 'Every other squad that plays a match gets a participation certificate.',
-  },
+  // The prize amounts moved to /admin (see DEFAULT_EVENT above for the starting
+  // values). Only the currency stays here — changing it means changing the
+  // symbol formatMoney prints, which is a code change either way.
+  prizeCurrency: 'INR',
 
-  entryFee: 200 as number,
+  /** Starting value only — /admin owns this once the site is running. */
+  entryFee: ENTRY_FEE,
 
   contact: {
     email: 'dropzone.lobby@gmail.com',
     whatsapp: 'https://wa.me/919000000000',
-    discord: 'https://discord.gg/your-invite',
-    instagram: 'https://instagram.com/your-handle',
+    discord: 'https://www.youtube.com/@DropZoneOpen',
+    instagram: 'https://www.instagram.com/drop_zone_open_esports/',
   },
 
   // false → the CTA becomes a disabled "Registrations closed" state everywhere.
@@ -84,46 +133,45 @@ export const CONFIG = {
     perKill: 1,
   },
 
+  // The dates are NOT here — they come from the calendar in /admin (see
+  // DEFAULT_EVENT above for the starting values). Everything else about a row
+  // is wording, so it stays in this file.
   schedule: [
     {
-      id: 'registration',
+      id: 'registration' as const,
       label: 'Registration window',
-      window: '25 Aug – 15 Sep',
       detail: 'Squads submit the form. Slots are confirmed in the order they arrive.',
       maps: [] as string[],
       matches: '',
     },
     {
-      id: 'qualifiers',
-      label: 'Qualifiers',
-      window: '20 – 21 Sep · 6:00 PM IST',
-      detail: '256 squads across 16 groups. Top 4 of every group advance.',
-      maps: ['Erangel', 'Sanhok'],
-      matches: '4 matches per group',
+      id: 'qualifiers_a' as const,
+      label: 'Qualifiers Group A',
+      detail: '16 squads, one lobby. Top 8 move to the grand finals.',
+      maps: ['Erangel', 'Miramar', 'Rondo'],
+      matches: '3 matches per group',
     },
     {
-      id: 'semis',
-      label: 'Semi-finals',
-      window: '27 Sep · 6:00 PM IST',
-      detail: '64 squads, 4 lobbies. Top 4 per lobby move to the grand finals.',
-      maps: ['Erangel', 'Miramar', 'Sanhok'],
-      matches: '5 matches per lobby',
+      id: 'qualifiers_b' as const,
+      label: 'Qualifiers Group B',
+      detail: '16 squads, one lobby. Top 8 move to the grand finals.',
+      maps: ['Erangel', 'Miramar', 'Rondo'],
+      matches: '3 matches per group',
     },
     {
-      id: 'finals',
+      id: 'finals' as const,
       label: 'Grand finals',
-      window: '4 Oct · 7:00 PM IST',
       detail: '16 squads, one lobby, casted live. Cumulative points decide it.',
-      maps: ['Erangel', 'Miramar', 'Erangel'],
-      matches: '6 matches',
+      maps: ['Rondo', 'Erangel', 'Erangel', 'Miramar'],
+      matches: '4 matches',
     },
   ],
 
   // What a captain should have open in another tab before starting the form.
   registrationChecklist: [
-    'In-game names for all 4 players, plus 1 substitute',
+    'In-game names for all 4 players, plus 1 substitute (optional)',
     'BGMI numeric UID for every player (Profile → the number under your IGN)',
-    "Captain's WhatsApp number — room IDs go here",
+    "Captain's WhatsApp number — you'll be added to the group where room IDs go out",
     'Discord tag of the captain',
     'Player levels — every account must be 30+',
   ],
@@ -162,7 +210,10 @@ export const CONFIG = {
   faq: [
     {
       q: 'Is there an entry fee?',
-      a: 'No. Registration is free for every stage, from qualifiers through the grand finals. Nobody from the organising team will ever ask you for money to hold a slot — if someone does, screenshot it and send it to the organiser email.',
+      // Written at render time from the live fee — see feeCopy() above. The
+      // text here is only what a visitor sees if the API is unreachable.
+      liveAnswer: 'entryFee' as const,
+      a: feeCopy(ENTRY_FEE).faq,
     },
     {
       q: 'How do I get the room ID and password?',

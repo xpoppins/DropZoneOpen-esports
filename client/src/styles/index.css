@@ -917,6 +917,88 @@
     margin: -6px 0 18px;
   }
 
+  /* Sits beside a field rather than under it, for a one-line consequence. */
+  .admin-note--inline {
+    flex: 1;
+    min-width: 220px;
+    padding-bottom: 10px;
+  }
+
+  /* The calendar: one row per stage, collapsing to a stack on a phone. */
+  .admin-dates {
+    display: grid;
+    gap: 14px;
+    margin: 4px 0 18px;
+  }
+
+  .admin-dates-row {
+    display: grid;
+    grid-template-columns: minmax(200px, 1.3fr) minmax(170px, 1fr) minmax(170px, 1fr);
+    gap: 12px;
+    align-items: end;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .admin-dates-name {
+    display: grid;
+    gap: 3px;
+    align-content: end;
+    padding-bottom: 9px;
+  }
+
+  .admin-dates-name strong {
+    font-size: 13px;
+    color: #f2ede1;
+    font-weight: 500;
+  }
+
+  .admin-subhead {
+    font-size: 13px;
+    color: #f2ede1;
+    margin: 22px 0 4px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+  }
+
+  /* Prize rows: name, value, and what that value will do on the page. */
+  .admin-prize-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(160px, 1fr) minmax(180px, 1.1fr);
+    gap: 12px;
+    align-items: center;
+  }
+
+  .admin-prize-name {
+    font-size: 13px;
+    color: rgba(201, 191, 164, 0.85);
+  }
+
+  /* A button that reads as a link, for a one-click correction. */
+  .admin-linkish {
+    color: var(--zone);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-size: inherit;
+  }
+
+  @media (max-width: 760px) {
+    .admin-prize-row {
+      grid-template-columns: 1fr;
+      gap: 5px;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .admin-dates-row {
+      grid-template-columns: 1fr 1fr;
+    }
+    .admin-dates-name {
+      grid-column: 1 / -1;
+      padding-bottom: 0;
+    }
+  }
+
   .admin-head-actions {
     display: flex;
     align-items: center;
@@ -1377,3 +1459,26 @@
 }
 
 @tailwind utilities;
+
+/* The schedule marker for the stage happening right now. Same teal fill as a
+   completed step, plus a slow halo so the eye lands on it first. */
+.stage-marker--live {
+  animation: stage-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes stage-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(var(--zone-rgb) / 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgb(var(--zone-rgb) / 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-marker--live {
+    animation: none;
+    box-shadow: 0 0 0 3px rgb(var(--zone-rgb) / 0.35);
+  }
+}

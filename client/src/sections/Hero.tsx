@@ -1,13 +1,16 @@
-import { CONFIG } from '../config/tournament';
+import { CONFIG, feeCopy } from '../config/tournament';
 import { RegisterCta } from '../components/ui/RegisterCta';
-import { formatIST, formatISTDate, pad } from '../lib/format';
+import { formatIST, formatISTDate, formatISTTime, pad } from '../lib/format';
 import { useCountdown } from '../lib/useCountdown';
 import { useDuckHandlers } from '../lib/audio';
+import type { EventSettings } from '../lib/api';
 
-type Props = { slots: { total: number; filled: number } };
+type Props = { slots: { total: number; filled: number }; event: EventSettings };
 
-export function Hero({ slots }: Props) {
-  const countdown = useCountdown(CONFIG.registrationClosesAt);
+export function Hero({ slots, event }: Props) {
+  const closesAt = event.schedule.registration.endsAt || event.schedule.registration.startsAt;
+  const countdown = useCountdown(closesAt);
+  const fee = feeCopy(event.entryFee);
   const duck = useDuckHandlers();
   const urgent = !countdown.expired && countdown.totalMs < CONFIG.urgentThresholdHours * 3600_000;
 
@@ -22,10 +25,10 @@ export function Hero({ slots }: Props) {
     { k: 'Edition', v: CONFIG.edition },
     { k: 'Mode', v: CONFIG.mode },
     { k: 'Maps', v: CONFIG.maps.join(' / ') },
-    { k: 'Drops', v: formatIST(CONFIG.tournamentStartsAt) },
+    { k: 'Drops', v: formatIST(event.schedule.qualifiers_a.startsAt) },
     // Slots are deliberately absent — the status bar carries that number at all
     // times, and printing it twice on one screen weakens both.
-    { k: 'Entry', v: CONFIG.entryFee === 0 ? 'Free' : `₹${CONFIG.entryFee}` },
+    { k: 'Entry', v: fee.stat },
   ];
 
   return (
@@ -47,8 +50,8 @@ export function Hero({ slots }: Props) {
       <div className="grid grid-cols-12 gap-x-6 gap-y-10 items-end">
         <div className="col-span-12 rail:col-span-7">
           <p className="max-w-[46ch] text-dust/80">
-            256 squads drop, one walks out. Free entry, {CONFIG.mode}, room IDs on WhatsApp, and standings you can
-            actually check.
+            32 squads drop, one walks out. {fee.short}, {CONFIG.mode}, room IDs on WhatsApp, and standings
+            you can actually check.
           </p>
 
           <div className="label mt-8 mb-3">
@@ -75,7 +78,7 @@ export function Hero({ slots }: Props) {
           )}
 
           <p className="label mt-4">
-            Closes {formatISTDate(CONFIG.registrationClosesAt)} · 11:59 pm IST ·{' '}
+            Closes {formatISTDate(closesAt)} · {formatISTTime(closesAt)} IST ·{' '}
             {Math.max(0, slots.total - slots.filled)} slots open
           </p>
 

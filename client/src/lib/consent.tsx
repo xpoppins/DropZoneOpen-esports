@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { TERMS_VERSION } from '../config/terms';
-import { CONFIG } from '../config/tournament';
+import { CONFIG, feeCopy } from '../config/tournament';
+import type { TermsInputs } from '../config/terms';
 import { Modal } from '../components/ui/Modal';
 import { TermsBody } from '../components/ui/TermsBody';
 import { recordFormOpen } from './api';
@@ -40,7 +41,12 @@ function openForm() {
   window.open(CONFIG.registrationFormUrl, '_blank', 'noopener,noreferrer');
 }
 
-export function ConsentProvider({ children }: { children: ReactNode }) {
+/**
+ * `live` carries the entry fee, closing date and slot count as they stand right
+ * now, so the consent box and the terms document quote the same numbers the
+ * rest of the page does.
+ */
+export function ConsentProvider({ children, live }: { children: ReactNode; live: TermsInputs }) {
   const [accepted, setAcceptedState] = useState(readStored);
   const [askOpen, setAskOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
@@ -126,7 +132,7 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
         )}
 
         <ul className="consent-points">
-          <li>Entry is free. Nobody from this tournament will ask you to pay for a slot.</li>
+          <li>{feeCopy(live.entryFee).note}</li>
           <li>Emulators, hacks and unregistered players mean instant disqualification.</li>
           <li>The captain is responsible for the whole squad’s conduct.</li>
         </ul>
@@ -144,7 +150,7 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
           </button>
         }
       >
-        <TermsBody />
+        <TermsBody live={live} />
       </Modal>
     </ConsentCtx.Provider>
   );

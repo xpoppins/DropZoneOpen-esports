@@ -11,7 +11,7 @@ export function Footer() {
   const channels = [
     { label: 'Email', value: CONFIG.contact.email, href: `mailto:${CONFIG.contact.email}` },
     { label: 'WhatsApp', value: 'Captains channel', href: CONFIG.contact.whatsapp },
-    { label: 'Discord', value: 'Server invite', href: CONFIG.contact.discord },
+    { label: 'You Tube', value: 'Stream and highlights', href: CONFIG.contact.discord },  //likha discord hai but YT ka link kaam kr rha hai
     { label: 'Instagram', value: 'Clips and results', href: CONFIG.contact.instagram },
   ];
 

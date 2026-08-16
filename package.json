@@ -2,7 +2,7 @@
   "name": "bgmi-tournament",
   "private": true,
   "version": "1.0.0",
-  "description": "BGMI community tournament site — registrations via Google Form, live standings via Express/MongoDB.",
+  "description": "BGMI community tournament site \u2014 registrations via Google Form, live standings via Express/MongoDB.",
   "workspaces": [
     "client",
     "server"
@@ -14,7 +14,8 @@
     "build": "npm run build --workspace client && npm run build --workspace server",
     "start": "npm run start --workspace server",
     "seed": "npm run seed --workspace server",
-    "media": "node scripts/make-placeholders.mjs"
+    "media": "node scripts/make-placeholders.mjs",
+    "migrate:stages": "npm run migrate:stages --workspace server"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

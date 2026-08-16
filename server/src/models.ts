@@ -14,13 +14,19 @@ const TeamSchema = new Schema(
 
 const StageSchema = new Schema(
   {
-    key: { type: String, required: true, unique: true, enum: ['qualifiers', 'semis', 'finals'] },
+    key: { type: String, required: true, unique: true, enum: ['qualifiers_a', 'qualifiers_b', 'finals'] },
     label: { type: String, required: true },
     status: { type: String, enum: ['pending', 'live', 'complete'], default: 'pending' },
     note: { type: String, default: '' },
     teams: { type: [TeamSchema], default: [] },
   },
   { timestamps: true },
+);
+
+/** ISO strings, not Dates — they carry the +05:30 offset the site displays. */
+const WindowSchema = new Schema(
+  { startsAt: { type: String, default: '' }, endsAt: { type: String, default: '' } },
+  { _id: false },
 );
 
 const StateSchema = new Schema(
@@ -31,6 +37,27 @@ const StateSchema = new Schema(
       filled: { type: Number, default: 0, min: 0 },
     },
     registrationOpen: { type: Boolean, default: true },
+    /** Entry fee, the calendar and the prize pool — all editable from /admin. */
+    event: {
+      entryFee: { type: Number, default: 200, min: 0 },
+      schedule: {
+        registration: { type: WindowSchema, default: () => ({}) },
+        qualifiers_a: { type: WindowSchema, default: () => ({}) },
+        qualifiers_b: { type: WindowSchema, default: () => ({}) },
+        finals: { type: WindowSchema, default: () => ({}) },
+      },
+      // Each prize is Mixed because it is either rupees or a label like
+      // 'Certificate'. types.ts decides which on the way in.
+      prizePool: {
+        total: { type: Number, default: 0, min: 0 },
+        first: { type: Schema.Types.Mixed, default: 0 },
+        second: { type: Schema.Types.Mixed, default: 0 },
+        third: { type: Schema.Types.Mixed, default: 0 },
+        mvp: { type: Schema.Types.Mixed, default: '' },
+        mostKills: { type: Schema.Types.Mixed, default: '' },
+        participationNote: { type: String, default: '' },
+      },
+    },
   },
   { timestamps: true, _id: false },
 );

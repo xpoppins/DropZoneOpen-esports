@@ -16,6 +16,42 @@ import { STAGE_KEYS, type StageKey } from './types.js';
 const isStageKey = (value: string): value is StageKey => (STAGE_KEYS as string[]).includes(value);
 const isMediaKind = (value: string): value is MediaKind => (MEDIA_KINDS as readonly string[]).includes(value);
 
+/**
+ * A single `bytes=` range, clamped to the file. Returns null when the client
+ * did not ask for one (send the whole thing) and 'unsatisfiable' when it asked
+ * for something outside the file (416). Multi-range requests are rare enough
+ * that answering them with the whole file is the honest simple choice.
+ */
+function parseRange(
+  header: string | undefined,
+  total: number,
+): { start: number; end: number } | 'unsatisfiable' | null {
+  if (!header) return null;
+
+  const match = /^bytes=(\d*)-(\d*)$/.exec(header.trim());
+  if (!match || (match[1] === '' && match[2] === '')) return null;
+
+  let start: number;
+  let end: number;
+
+  if (match[1] === '') {
+    // "bytes=-500" — the last 500 bytes, which is how a player finds a
+    // trailing moov atom.
+    const suffix = Number(match[2]);
+    if (suffix <= 0) return 'unsatisfiable';
+    start = Math.max(0, total - suffix);
+    end = total - 1;
+  } else {
+    start = Number(match[1]);
+    end = match[2] === '' ? total - 1 : Math.min(Number(match[2]), total - 1);
+  }
+
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start > end || start >= total) {
+    return 'unsatisfiable';
+  }
+  return { start, end };
+}
+
 /** What each slot accepts, and how big it may get. A background video is the
  *  one thing a visitor on mobile data really pays for, so it is kept small. */
 const EXPECTED_TYPE: Record<MediaKind, string> = {
@@ -163,7 +199,7 @@ export function createRouter(store: Store): Router {
     wrap(async (req, res) => {
       const key = req.params.stage;
       if (!isStageKey(key)) {
-        res.status(404).json({ error: `Unknown stage "${key}". Use qualifiers, semis or finals.` });
+        res.status(404).json({ error: `Unknown stage "${key}". Use qualifiers_a, qualifiers_b or finals.` });
         return;
       }
       const results = await store.getResults();
@@ -187,7 +223,7 @@ export function createRouter(store: Store): Router {
     wrap(async (req, res) => {
       const key = req.params.stage;
       if (!isStageKey(key)) {
-        res.status(404).json({ error: `Unknown stage "${key}". Use qualifiers, semis or finals.` });
+        res.status(404).json({ error: `Unknown stage "${key}". Use qualifiers_a, qualifiers_b or finals.` });
         return;
       }
       res.json(await store.putStage(key, req.body));
@@ -254,8 +290,31 @@ export function createRouter(store: Store): Router {
       res.set({
         'Content-Type': found.meta.contentType,
         'Cache-Control': 'public, max-age=604800',
+        // <video> will not play without this. Chrome asks for byte ranges and,
+        // for an MP4 whose moov atom sits at the end of the file, it has to
+        // seek there before it can render a single frame. Answer the whole
+        // file to a range request and the element just stays blank.
+        'Accept-Ranges': 'bytes',
         ETag: etag,
       });
+
+      const total = found.data.length;
+      const asked = parseRange(req.get('range'), total);
+
+      if (asked === 'unsatisfiable') {
+        res.status(416).set('Content-Range', `bytes */${total}`).end();
+        return;
+      }
+
+      if (asked) {
+        res.status(206).set({
+          'Content-Range': `bytes ${asked.start}-${asked.end}/${total}`,
+          'Content-Length': String(asked.end - asked.start + 1),
+        });
+        res.end(found.data.subarray(asked.start, asked.end + 1));
+        return;
+      }
+
       res.send(found.data);
     }),
   );

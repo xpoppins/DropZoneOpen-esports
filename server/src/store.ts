@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { env } from './env.js';
 import { IntentModel, MediaModel, StageModel, StateModel } from './models.js';
 import {
+  DEFAULT_LABELS,
   DEFAULT_STATE,
   STAGE_KEYS,
   parseResults,
@@ -42,6 +43,38 @@ const intentsPath = () => path.join(env.dataDir, 'intents.jsonl');
 const mediaDir = () => path.join(env.dataDir, 'media');
 /** The bytes and their content type are stored side by side, so the extension
  *  of the uploaded file never has to be trusted or guessed. */
+/**
+ * Whatever the driver handed back → real bytes.
+ *
+ * A `.lean()` query does not hydrate documents, so a Buffer field arrives as a
+ * BSON `Binary` wrapper rather than a Node Buffer. `Buffer.from()` on that
+ * object silently produces an EMPTY buffer — the upload saves fine, the size is
+ * right in the listing, and the file serves as 0 bytes. Unwrap it explicitly.
+ */
+function toBuffer(value: unknown): Buffer {
+  if (Buffer.isBuffer(value)) return value;
+  const inner = (value as { buffer?: unknown })?.buffer;
+  if (Buffer.isBuffer(inner)) return inner;
+  if (inner instanceof Uint8Array) return Buffer.from(inner);
+  if (value instanceof Uint8Array) return Buffer.from(value);
+  return Buffer.alloc(0);
+}
+
+/**
+ * Uploaded files live inside their Mongo document, so every read drags the
+ * whole thing across the network — ~8 s for an 8 MB video from Atlas. A browser
+ * playing a video asks for several byte ranges (the moov atom is often at the
+ * end of the file), and a 40 KB range used to cost a full 8 MB fetch each time,
+ * which stalls the player outright. The backdrop image paid the same toll on
+ * every single page view.
+ *
+ * So hold the bytes in memory. Writes go through this process and clear their
+ * own entry, so invalidation is exact; the TTL is only a backstop for the day
+ * this runs on more than one instance.
+ */
+const MEDIA_CACHE_TTL_MS = 60_000;
+const mediaCache = new Map<MediaKind, { at: number; value: { meta: MediaMeta; data: Buffer } | null }>();
+
 const mediaBin = (kind: MediaKind) => path.join(mediaDir(), `${kind}.bin`);
 const mediaMeta = (kind: MediaKind) => path.join(mediaDir(), `${kind}.json`);
 
@@ -166,7 +199,15 @@ function createMongoStore(): Store {
     },
 
     async putStage(key, stage) {
-      const clean = parseStage(stage, key);
+      // The admin panel has no label field, so a save arrives without one. Fall
+      // back to the label already stored — never to `key`, or every save would
+      // rename the tab on the live site to "qualifiers_a". The file store has
+      // always done this (see above); Mongo has to be told.
+      const existing = await StageModel.findOne({ key }, { label: 1 }).lean();
+      const fallbackLabel =
+        typeof existing?.label === 'string' && existing.label.trim() ? existing.label : DEFAULT_LABELS[key];
+
+      const clean = parseStage(stage, fallbackLabel);
       await StageModel.findOneAndUpdate({ key }, { ...clean, key }, { upsert: true, new: true });
       return clean;
     },
@@ -204,20 +245,28 @@ function createMongoStore(): Store {
     },
 
     async getMedia(kind) {
+      const hit = mediaCache.get(kind);
+      if (hit && Date.now() - hit.at < MEDIA_CACHE_TTL_MS) return hit.value;
+
       const doc = await MediaModel.findOne({ kind }).lean();
-      if (!doc) return null;
-      return {
-        meta: {
-          kind,
-          contentType: doc.contentType,
-          size: doc.size,
-          updatedAt: new Date(doc.updatedAt ?? Date.now()).toISOString(),
-        },
-        data: Buffer.from(doc.data as unknown as Buffer),
-      };
+      const value = doc
+        ? {
+            meta: {
+              kind,
+              contentType: doc.contentType,
+              size: doc.size,
+              updatedAt: new Date(doc.updatedAt ?? Date.now()).toISOString(),
+            },
+            data: toBuffer(doc.data),
+          }
+        : null;
+
+      mediaCache.set(kind, { at: Date.now(), value });
+      return value;
     },
 
     async putMedia(kind, contentType, data) {
+      mediaCache.delete(kind);
       const doc = await MediaModel.findOneAndUpdate(
         { kind },
         { kind, contentType, size: data.length, data },
@@ -232,6 +281,7 @@ function createMongoStore(): Store {
     },
 
     async deleteMedia(kind) {
+      mediaCache.delete(kind);
       await MediaModel.deleteOne({ kind });
     },
 

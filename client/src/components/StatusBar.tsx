@@ -1,10 +1,11 @@
 import { CONFIG } from '../config/tournament';
+import type { EventSettings } from '../lib/api';
 import { pad } from '../lib/format';
 import { useCountdown } from '../lib/useCountdown';
 import { RegisterCta } from './ui/RegisterCta';
 import { AudioToggle } from './ui/AudioToggle';
 
-type Props = { slots: { total: number; filled: number } };
+type Props = { slots: { total: number; filled: number }; event: EventSettings };
 
 /**
  * One fixed bar carrying the two numbers that decide whether someone registers
@@ -14,8 +15,9 @@ type Props = { slots: { total: number; filled: number } };
  * Both readings have a short form for narrow screens. The numbers never drop,
  * only the words around them.
  */
-export function StatusBar({ slots }: Props) {
-  const countdown = useCountdown(CONFIG.registrationClosesAt);
+export function StatusBar({ slots, event }: Props) {
+  const registration = event.schedule.registration;
+  const countdown = useCountdown(registration.endsAt || registration.startsAt);
   const remaining = Math.max(0, slots.total - slots.filled);
   const urgent = !countdown.expired && countdown.totalMs < CONFIG.urgentThresholdHours * 3600_000;
 

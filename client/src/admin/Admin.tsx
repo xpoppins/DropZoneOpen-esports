@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
-import { STAGE_ORDER, type Results, type StageKey, type StageStatus, type TeamRow } from '../lib/api';
+import {
+  STAGE_ORDER,
+  type EventSettings,
+  type Results,
+  type StageKey,
+  type StageStatus,
+  type TeamRow,
+} from '../lib/api';
 import { MediaPanel } from './MediaPanel';
+import { EventPanel } from './EventPanel';
 import { Login } from './Login';
 
 const STATUSES: StageStatus[] = ['pending', 'live', 'complete'];
@@ -23,7 +31,8 @@ export default function Admin() {
   const [auth, setAuth] = useState<Auth>({ checked: false, authenticated: false, enabled: true });
   const [results, setResults] = useState<Results | null>(null);
   const [slots, setSlots] = useState<Slots | null>(null);
-  const [stage, setStage] = useState<StageKey>('qualifiers');
+  const [event, setEvent] = useState<EventSettings | null>(null);
+  const [stage, setStage] = useState<StageKey>('qualifiers_a');
   const [message, setMessage] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -45,6 +54,7 @@ export default function Admin() {
     await fetch('/api/admin/logout', { method: 'POST' }).catch(() => undefined);
     setResults(null);
     setSlots(null);
+    setEvent(null);
     setMessage(null);
     setAuth((prev) => ({ ...prev, authenticated: false }));
   };
@@ -57,6 +67,7 @@ export default function Admin() {
       ]);
       setResults(standings as Results);
       setSlots({ ...(live.slots as { total: number; filled: number }), registrationOpen: live.registrationOpen });
+      setEvent(live.event as EventSettings);
     } catch {
       setMessage({ kind: 'err', text: 'Could not reach the API. Is the server running?' });
     }
@@ -125,6 +136,11 @@ export default function Admin() {
     );
   };
 
+  const saveEvent = (next: EventSettings) => {
+    setEvent(next);
+    void send('/api/tournament', 'PATCH', { event: next }, 'Entry fee and dates saved.');
+  };
+
   // Nothing about the tool exists until the server has vouched for this browser.
   if (!auth.checked) return null;
   if (!auth.authenticated)
@@ -146,7 +162,7 @@ export default function Admin() {
 
       {message && <p className={`admin-msg admin-msg--${message.kind}`}>{message.text}</p>}
 
-      {!results || !slots ? (
+      {!results || !slots || !event ? (
         <p className="admin-note">Loading…</p>
       ) : (
         <>
@@ -184,6 +200,8 @@ export default function Admin() {
               </button>
             </div>
           </section>
+
+          <EventPanel event={event} busy={busy} onSave={saveEvent} />
 
           <MediaPanel onMessage={setMessage} onSignedOut={() => setAuth((prev) => ({ ...prev, authenticated: false }))} />
 

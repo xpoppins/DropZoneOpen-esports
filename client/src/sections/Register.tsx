@@ -1,11 +1,12 @@
-import { CONFIG } from '../config/tournament';
+import { CONFIG, feeCopy } from '../config/tournament';
+import type { EventSettings } from '../lib/api';
 import { Section } from '../components/ui/Section';
 import { RegisterCta } from '../components/ui/RegisterCta';
 import { ConsentCheckbox } from '../components/ui/ConsentCheckbox';
 import { formatIST, formatNumber, pad } from '../lib/format';
 import { useCountdown } from '../lib/useCountdown';
 
-type Props = { slots: { total: number; filled: number } };
+type Props = { slots: { total: number; filled: number }; event: EventSettings };
 
 const AFTER = [
   {
@@ -22,8 +23,9 @@ const AFTER = [
   },
 ];
 
-export function Register({ slots }: Props) {
-  const countdown = useCountdown(CONFIG.registrationClosesAt);
+export function Register({ slots, event }: Props) {
+  const closesAt = event.schedule.registration.endsAt || event.schedule.registration.startsAt;
+  const countdown = useCountdown(closesAt);
   const remaining = Math.max(0, slots.total - slots.filled);
   const fill = slots.total > 0 ? slots.filled / slots.total : 0;
   const urgent = !countdown.expired && countdown.totalMs < CONFIG.urgentThresholdHours * 3600_000;
@@ -82,7 +84,7 @@ export function Register({ slots }: Props) {
             <hr className="my-7 border-0 border-t border-rule" />
 
             <div className="label">Registration closes</div>
-            <p className="num mt-2 text-[15px] text-[#ece6d8]">{formatIST(CONFIG.registrationClosesAt)}</p>
+            <p className="num mt-2 text-[15px] text-[#ece6d8]">{formatIST(closesAt)}</p>
             <p className={`num mt-1 text-[13px] ${urgent ? 'urgent' : 'text-dust/75'}`}>
               {countdown.expired
                 ? 'Closed'
@@ -93,8 +95,7 @@ export function Register({ slots }: Props) {
               <ConsentCheckbox />
               <RegisterCta label="Open the registration form" className="w-full" />
               <p className="text-[13px] text-dust/75 leading-relaxed">
-                Opens Google Forms in a new tab. Entry is free — nobody from this tournament will ask you to pay for a
-                slot.
+                Opens Google Forms in a new tab. {feeCopy(event.entryFee).note}
               </p>
             </div>
           </div>

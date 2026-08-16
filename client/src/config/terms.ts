@@ -1,4 +1,4 @@
-import { CONFIG } from './tournament';
+import { CONFIG, feeCopy } from './tournament';
 import { formatIST, formatMoney } from '../lib/format';
 
 /* ===========================================================================
@@ -31,16 +31,26 @@ export type TermsSection = { n: number; title: string; blocks: TermsBlock[] };
 
 const NAME = `${CONFIG.tournamentName} ${CONFIG.edition}`;
 const ORG = CONFIG.organiser;
-const SLOTS = CONFIG.slots.total;
-const CLOSES = formatIST(CONFIG.registrationClosesAt);
-const ENTRY = CONFIG.entryFee === 0 ? 'Free' : `${formatMoney(CONFIG.entryFee)} per squad`;
+/** The three facts in this document that the organiser can change in /admin. */
+export type TermsInputs = { closesAt: string; entryFee: number; slotsTotal: number; prizeTotal: number };
 
 export const TERMS_INTRO = [
   `By registering, every player confirms they have read, understood and accepted these terms. Registration is not complete until this acceptance is given.`,
   `This is a community-organised tournament. It is not affiliated with, sponsored by, or endorsed by KRAFTON, Inc., Level Infinite, or Battlegrounds Mobile India.`,
 ];
 
-export const TERMS_SECTIONS: TermsSection[] = [
+/**
+ * Built per render, because the entry fee, the closing date and the slot count
+ * are all live now — a fee changed in /admin has to change clause 3.6 too, or
+ * the terms say one thing and the rest of the site says another.
+ */
+export function buildTermsSections({ closesAt, entryFee, slotsTotal, prizeTotal }: TermsInputs): TermsSection[] {
+  const CLOSES = formatIST(closesAt);
+  const ENTRY = feeCopy(entryFee).terms;
+  const SLOTS = slotsTotal;
+  const POOL = formatMoney(prizeTotal);
+
+  return [
   {
     n: 1,
     title: 'Definitions',
@@ -266,7 +276,7 @@ export const TERMS_SECTIONS: TermsSection[] = [
       {
         kind: 'list',
         items: [
-          `12.1 Prize pool: ${formatMoney(CONFIG.prizePool.total)}, distributed as published on the tournament page.`,
+          `12.1 Prize pool: ${POOL}, distributed as published on the tournament page.`,
           "12.2 Prizes are awarded to the Team, transferred to the Captain's verified account. Internal distribution among Team members is entirely the Team's own responsibility, and the Organiser will not mediate in such disputes.",
           '12.3 To receive a prize, the Captain must provide: full name as per PAN, PAN number, a government photo ID, bank account/UPI details, and a signed acknowledgement of receipt.',
           '12.4 Taxes: prize winnings are subject to deduction of tax at source (TDS) under applicable Indian income tax law. Prizes are paid net of TDS, and the winner is responsible for their own income tax filing.',
@@ -378,7 +388,8 @@ export const TERMS_SECTIONS: TermsSection[] = [
         text: 'Ticking the acceptance box on this website or on the registration form, or joining a Match lobby, constitutes full acceptance of these terms by every member of the Team. The Captain confirms they have shared these terms with all Team members.',
       },
     ],
-  },
-];
+    },
+  ];
+}
 
 export const TERMS_FOOTER = `${NAME} is organised by ${ORG}. Questions: ${CONFIG.contact.email}`;

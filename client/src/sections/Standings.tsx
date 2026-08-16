@@ -14,7 +14,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export function Standings({ results, live }: Props) {
-  const [stageKey, setStageKey] = useState<StageKey>('qualifiers');
+  const [stageKey, setStageKey] = useState<StageKey>('qualifiers_a');
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [overflowing, setOverflowing] = useState(false);

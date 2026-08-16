@@ -1,8 +1,9 @@
-import { TERMS_FOOTER, TERMS_INTRO, TERMS_SECTIONS, TERMS_UPDATED } from '../../config/terms';
+import { buildTermsSections, TERMS_FOOTER, TERMS_INTRO, TERMS_UPDATED, type TermsInputs } from '../../config/terms';
 import { CONFIG } from '../../config/tournament';
 
 /** The terms document itself, rendered from config/terms.ts. */
-export function TermsBody() {
+export function TermsBody({ live }: { live: TermsInputs }) {
+  const sections = buildTermsSections(live);
   return (
     <div className="terms">
       <p className="terms-meta">
@@ -15,7 +16,7 @@ export function TermsBody() {
         </p>
       ))}
 
-      {TERMS_SECTIONS.map((section) => (
+      {sections.map((section) => (
         <section key={section.n} className="terms-section">
           <h3>
             <span className="terms-n">{section.n}.</span> {section.title}

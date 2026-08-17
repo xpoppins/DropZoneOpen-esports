@@ -15,7 +15,9 @@
     "start": "npm run start --workspace server",
     "seed": "npm run seed --workspace server",
     "media": "node scripts/make-placeholders.mjs",
-    "migrate:stages": "npm run migrate:stages --workspace server"
+    "migrate:stages": "npm run migrate:stages --workspace server",
+    "prebuild": "node scripts/make-sitemap.mjs",
+    "seo:images": "node scripts/make-seo-images.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

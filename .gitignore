@@ -3,6 +3,10 @@ dist/
 .env
 .env.local
 
+# ...but the site URL is public and the build needs it to write correct
+# canonical / og:image / sitemap addresses. Nothing secret lives in it.
+!client/.env
+
 *.log
 npm-debug.log*
 .DS_Store

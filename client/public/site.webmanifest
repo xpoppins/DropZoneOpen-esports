@@ -1,0 +1,17 @@
+{
+  "name": "Drop Zone Open — BGMI Squad TPP Tournament",
+  "short_name": "Drop Zone Open",
+  "description": "Online BGMI Squad TPP tournament in India. Register your squad and follow live standings.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0A0C0E",
+  "theme_color": "#0A0C0E",
+  "lang": "en-IN",
+  "categories": ["sports", "games", "entertainment"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

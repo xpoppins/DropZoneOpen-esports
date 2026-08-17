@@ -243,6 +243,10 @@ export const CONFIG = {
       q: 'Is this an official Krafton event?',
       a: 'No. This is a community tournament run by independent organisers. It is not affiliated with, sponsored by, or endorsed by Krafton or BGMI.',
     },
+    {
+      q: 'Will matches be played in an Advanced Custom Room?',
+      a: 'Yes. All matches run in Advanced Custom Rooms arranged by the organiser, with settings locked by an admin so every squad plays the same match. You do not need a room card — just join with the ID and password posted in Announcements about 10 minutes before your match.',
+    },
   ],
 } as const;
 

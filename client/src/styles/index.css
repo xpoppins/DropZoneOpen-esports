@@ -268,7 +268,17 @@
   }
 
   .display--hero {
-    font-size: clamp(3.5rem, 14vw, 11rem);
+    /* 12vw, not 14vw, and a smaller floor.
+     *
+     * "NO SECOND" is one unbreakable line inside .crop, so if it is wider than
+     * the column the end of the word is simply cut off. At 14vw that happened
+     * at every viewport except ~1440px, which is where it was originally
+     * tuned: on a 390px phone the final D disappeared entirely, which reads as
+     * a broken page rather than as the deliberate bleed it is meant to be.
+     *
+     * 12vw makes the line fit at every width from 320px up. Above ~1467px the
+     * 11rem cap still governs, so wide desktop is pixel-identical to before. */
+    font-size: clamp(2.25rem, 12vw, 11rem);
     color: #f4efe3;
   }
 
@@ -400,6 +410,27 @@
     font-size: 12px;
     font-family: inherit;
     cursor: pointer;
+  }
+
+  /* The sound button is 31x29 CSS px, which is under the 44px a thumb needs.
+     Rather than make it visually bigger — it is deliberately quiet up there —
+     an invisible overlay extends only the TAP area, and only on touch screens.
+     Nothing moves and nothing renders differently.
+
+     The insets are asymmetric on purpose: the Register button sits 8px to the
+     right, so 4px horizontally keeps the two hit areas from overlapping and
+     stealing each other's taps. Vertically there is nothing to collide with,
+     so -8px takes the height to ~45px, inside the 52px status bar. */
+  @media (pointer: coarse) {
+    .audio-toggle {
+      position: relative;
+    }
+
+    .audio-toggle::after {
+      content: '';
+      position: absolute;
+      inset: -8px -4px;
+    }
   }
 
   .audio-toggle:hover {

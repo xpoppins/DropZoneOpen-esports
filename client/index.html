@@ -1,23 +1,200 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-IN">
   <head>
+
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-V00B6B1E0C"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-V00B6B1E0C');
+</script>
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P252L3QW');</script>
+<!-- End Google Tag Manager -->
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0A0C0E" />
+
+    
+    <meta name="google-site-verification" content="AkwOvn53DWzikVWesbI1lfpTFX_ILZUFxvJ9G_2sMsg" />
+
+    <!-- ===================================================================
+         SEARCH
+         The address is injected from VITE_SITE_URL (client/.env) at build
+         time, so moving to a real domain is one line in one file.
+         =================================================================== -->
+    <title>Drop Zone Open — BGMI Squad TPP Tournament, India</title>
     <meta
       name="description"
-      content="Community BGMI tournament — Squad TPP across Erangel, Miramar and Rondo. Register your squad and follow live standings."
+      content="Online BGMI Squad TPP tournament in India. Register your squad, get room IDs on WhatsApp, and follow live standings after every match."
     />
-    <title>Drop Zone Open — BGMI Squad TPP</title>
+    <link rel="canonical" href="%VITE_SITE_URL%/" />
+
+    <!-- Ignored by Google since 2009; still read by a few smaller engines. -->
+    <meta
+      name="keywords"
+      content="BGMI tournament, BGMI tournament registration, BGMI Squad TPP tournament, BGMI scrims India, BGMI custom room tournament, Battlegrounds Mobile India tournament, BGMI esports India, online BGMI tournament 2026, Drop Zone Open"
+    />
+
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="author" content="Drop Zone Collective" />
+    <meta name="publisher" content="Drop Zone Collective" />
+
+    <!-- ===================================================================
+         LINK PREVIEWS (WhatsApp, Instagram DMs, Discord, X, LinkedIn)
+         This is how the site looks when a captain shares it in a squad
+         group — for a tournament, it matters more than any ranking factor.
+         =================================================================== -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Drop Zone Open" />
+    <meta property="og:title" content="Drop Zone Open — BGMI Squad TPP Tournament, India" />
+    <meta
+      property="og:description"
+      content="Register your squad for an online BGMI Squad TPP tournament. Two qualifier groups, a casted grand final, and standings updated after every match."
+    />
+    <meta property="og:url" content="%VITE_SITE_URL%/" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:image" content="%VITE_SITE_URL%/og.png" />
+    <meta property="og:image:secure_url" content="%VITE_SITE_URL%/og.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Drop Zone Open — BGMI Squad TPP tournament. No second circle." />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Drop Zone Open — BGMI Squad TPP Tournament, India" />
+    <meta
+      name="twitter:description"
+      content="Register your squad for an online BGMI Squad TPP tournament. Two qualifier groups, a casted grand final, and live standings."
+    />
+    <meta name="twitter:image" content="%VITE_SITE_URL%/og.png" />
+    <meta name="twitter:image:alt" content="Drop Zone Open — BGMI Squad TPP tournament. No second circle." />
+
+    <!-- ===================================================================
+         ICONS
+         Google shows the favicon beside the result on mobile, so this is a
+         search-results asset, not only a browser-tab one.
+         =================================================================== -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- ===================================================================
+         STRUCTURED DATA — baseline
+         Built from the config defaults. This is what a crawler that does not
+         run JavaScript reads. Google, Bing and the AI crawlers render the
+         page and get the live version instead (see lib/useStructuredData.ts),
+         which replaces this block on mount.
+         =================================================================== -->
+    <script type="application/ld+json" id="dz-structured-data-baseline">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "%VITE_SITE_URL%/#organization",
+            "name": "Drop Zone Collective",
+            "url": "%VITE_SITE_URL%/",
+            "email": "dropzone.lobby@gmail.com",
+            "description": "Community esports organiser running Drop Zone Open, an online BGMI Squad TPP tournament for players in India.",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "%VITE_SITE_URL%/icon-512.png",
+              "width": 512,
+              "height": 512
+            }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "%VITE_SITE_URL%/#website",
+            "url": "%VITE_SITE_URL%/",
+            "name": "Drop Zone Open",
+            "description": "Online BGMI Squad TPP tournament in India with live standings.",
+            "publisher": { "@id": "%VITE_SITE_URL%/#organization" },
+            "inLanguage": "en-IN"
+          },
+          {
+            "@type": "WebPage",
+            "@id": "%VITE_SITE_URL%/#webpage",
+            "url": "%VITE_SITE_URL%/",
+            "name": "Drop Zone Open — BGMI Squad TPP Tournament, India",
+            "isPartOf": { "@id": "%VITE_SITE_URL%/#website" },
+            "about": { "@id": "%VITE_SITE_URL%/#event" },
+            "inLanguage": "en-IN",
+            "speakable": {
+              "@type": "SpeakableSpecification",
+              "cssSelector": ["#hero h1", "#hero p", "#format h2", "#prize h2"]
+            }
+          },
+          {
+            "@type": "SportsEvent",
+            "@id": "%VITE_SITE_URL%/#event",
+            "name": "Drop Zone Open League First",
+            "description": "Squad TPP BGMI tournament across Erangel, Miramar and Rondo. Two qualifier groups and a grand final, with live standings after every match.",
+            "sport": "Esports",
+            "startDate": "2026-09-20T18:00:00+05:30",
+            "endDate": "2026-10-04T19:00:00+05:30",
+            "eventStatus": "https://schema.org/EventScheduled",
+            "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+            "location": { "@type": "VirtualLocation", "url": "%VITE_SITE_URL%/" },
+            "image": ["%VITE_SITE_URL%/og.png"],
+            "url": "%VITE_SITE_URL%/",
+            "organizer": { "@id": "%VITE_SITE_URL%/#organization" },
+            "inLanguage": "en-IN",
+            "offers": {
+              "@type": "Offer",
+              "name": "Squad entry",
+              "url": "%VITE_SITE_URL%/#register",
+              "price": "200",
+              "priceCurrency": "INR",
+              "availability": "https://schema.org/InStock"
+            }
+          }
+        ]
+      }
+    </script>
+
+
   </head>
+
   <body>
+    <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P252L3QW"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+
     <div id="root"></div>
+
+    <!-- A crawler or reader that never runs JavaScript still gets the facts
+         that matter, and they are the same facts the rendered page shows. -->
     <noscript>
-      <div style="padding: 24px; color: #c9bfa4; background: #0a0c0e; font-family: system-ui">
-        This tournament site needs JavaScript for live standings. Registration form:
-        check the pinned link in the organiser's Discord or Instagram bio.
+      <div style="padding: 24px; color: #c9bfa4; background: #0a0c0e; font-family: system-ui; line-height: 1.6">
+        <h1>Drop Zone Open — BGMI Squad TPP tournament</h1>
+        <p>
+          An online Battlegrounds Mobile India (BGMI) Squad TPP tournament for players in India, organised by Drop
+          Zone Collective. Squads play two qualifier groups of 16, and the top 8 from each group move to a casted
+          grand final. Maps are Erangel, Miramar and Rondo.
+        </p>
+        <p>
+          Live standings, the full schedule, rules, prize breakdown and the registration form need JavaScript. To
+          register or ask a question, mail
+          <a href="mailto:dropzone.lobby@gmail.com" style="color: #3df2e4">dropzone.lobby@gmail.com</a>.
+        </p>
       </div>
     </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

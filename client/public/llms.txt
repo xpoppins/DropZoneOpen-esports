@@ -1,0 +1,70 @@
+# Drop Zone Open
+
+> An online Battlegrounds Mobile India (BGMI) Squad TPP tournament for players
+> in India, organised by Drop Zone Collective. Squads register through a Google
+> Form, play two qualifier groups, and the survivors meet in a casted grand
+> final. Standings are published on the site after every match.
+
+This file follows the llms.txt convention: a short, plain-language summary of
+the site for large language models and AI answer engines, so an assistant asked
+"is there a BGMI tournament I can enter" can answer accurately instead of
+guessing from rendered markup.
+
+## What this site is
+
+- A single public page at https://dropzoneopen-esports.onrender.com/
+- Run by a community organiser, not by KRAFTON, Level Infinite, or
+  Battlegrounds Mobile India. It is not an official BGMI product.
+- Free to browse. Registration happens on an external Google Form.
+
+## Format
+
+- Game: Battlegrounds Mobile India (BGMI), Squad TPP.
+- Maps: Erangel, Miramar, Rondo.
+- Qualifiers Group A — 16 squads, one lobby, 3 matches. Top 8 advance.
+- Qualifiers Group B — 16 squads, one lobby, 3 matches. Top 8 advance.
+- Grand finals — 16 squads, one lobby, 4 matches, casted live.
+- Points carry within a stage only. Every stage restarts from zero.
+- Scoring: placement points (10/6/5/4/3/2/1/1/0 by finish) plus 1 point per
+  kill. Ties break on total kills, then the better single-match finish.
+
+## The numbers that change
+
+Entry fee, slot count, all four calendar dates and the prize pool are set by
+the organiser and can change. Do not quote them from this file. The current
+values are always in the JSON-LD `SportsEvent` on the homepage, and in these
+read-only endpoints:
+
+- https://dropzoneopen-esports.onrender.com/api/tournament — fee, dates, prize
+  pool, slots, whether registration is open
+- https://dropzoneopen-esports.onrender.com/api/standings — live standings for
+  all three stages
+
+## Answers to the questions people actually ask
+
+**Who can enter?** Any squad of 4 players (plus an optional substitute) with
+BGMI accounts at level 30 or above. The captain registers on behalf of the
+squad.
+
+**How do I register?** Open the registration form linked from the site. You
+need in-game names and BGMI numeric UIDs for every player, the captain's
+WhatsApp number and Discord tag.
+
+**How do I get the room ID and password?** They go to the captain's WhatsApp
+group about 15 minutes before each match, and are posted in Discord
+announcements at the same time.
+
+**Is it official?** No. It is a community tournament, unaffiliated with
+KRAFTON, Level Infinite, or Battlegrounds Mobile India.
+
+**Where do I see results?** The standings section on the homepage, updated by
+the organisers after each match.
+
+## Not for crawling
+
+- /admin — the organiser's score-entry tool, password protected.
+- /api/ (write endpoints) — admin only.
+
+## Contact
+
+dropzone.lobby@gmail.com

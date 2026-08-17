@@ -1,4 +1,41 @@
+# Drop Zone Open — crawl policy
+#
+# The whole public site is one page and we want all of it indexed. The only
+# things closed off are the score-entry tool and the API, neither of which has
+# anything a searcher would want.
+
 User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api/
+
+# Answer engines and AI assistants are welcome. Being quoted by one is how a
+# player finds a tournament now — the same reason we publish structured data.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://dropzoneopen-esports.onrender.com/sitemap.xml

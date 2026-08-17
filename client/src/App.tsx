@@ -10,12 +10,17 @@ import { Faq } from './sections/Faq';
 import { Footer } from './sections/Footer';
 import { useReveal } from './lib/useReveal';
 import { useTournamentData } from './lib/useTournamentData';
+import { useStructuredData } from './lib/useStructuredData';
 import { ConsentProvider } from './lib/consent';
 
 export default function App() {
-  const { results, live, slots, event } = useTournamentData();
+  const { results, live, slots, event, registrationOpen } = useTournamentData();
 
   useReveal([results]);
+
+  // Keeps the JSON-LD in the page honest: same fee, dates and slot count the
+  // visitor sees, so a crawler and a reader never disagree.
+  useStructuredData({ event, results, slots, registrationOpen });
 
   const registration = event.schedule.registration;
 

@@ -107,7 +107,7 @@ export const CONFIG = {
 
   contact: {
     email: 'dropzone.lobby@gmail.com',
-    whatsapp: 'https://wa.me/919000000000',
+    whatsapp: 'https://chat.whatsapp.com/FAXb5ej0No1HM9oCeMUutg',
     discord: 'https://www.youtube.com/@DropZoneOpen',
     instagram: 'https://www.instagram.com/drop_zone_open_esports/',
   },

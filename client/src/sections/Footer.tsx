@@ -23,8 +23,7 @@ export function Footer() {
             Run by {CONFIG.organiser}
           </h2>
           <p className="mt-4 max-w-prose text-dust/75">
-            Admins answer on Discord fastest during match nights, and on email within a day otherwise. Bring room
-            problems to the lobby admin first — they can fix things while the match is still on.
+            Admins answer fastest on the Captains WhatsApp channel during match nights, and on email within a day otherwise. Bring room problems to the lobby admin first — they can fix things while the match is still on.
           </p>
         </div>
 
